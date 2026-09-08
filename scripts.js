@@ -1,5 +1,3 @@
-
-
 window.addEventListener("load", async() => {
     let solutionSet = [];
     
@@ -358,6 +356,88 @@ window.addEventListener("load", async() => {
                 cMinDigit.remainingCandidates(cMinDigit.getValue(digits))
         };
 
+        // clue - is 7 a factor of the number
+        const factorOf7 = {
+
+            name: "factorOf7",
+
+            getValue: digits => {
+                let result = false;
+                if (number % 7 === 0) {
+                    result = true;
+                } 
+
+            return result;
+            },
+
+            getText: value => {
+                if (value === true) {
+                        return `I am a multiple of 7`;
+                } else {
+                        return `I am not a multiple of 7`
+                }
+            },
+
+            remainingCandidates: value => {
+                const candArray = candidates.filter(candidate => {
+                    // const candidateDigits = candidate.split('').map(Number);
+                    if (candidate % 7 === 0 && value === true) {
+                        return true;
+                    } else if (candidate % 7 !== 0 && value === false) {
+                        return true;
+                    }
+                    return false;});
+                return candArray;
+            },
+
+            shortText: digits =>
+                factorOf7.getText(factorOf7.getValue(digits)),
+
+            shortCand: digits =>
+                factorOf7.remainingCandidates(factorOf7.getValue(digits))
+        };
+
+        // clue - is 3 a factor of the number
+        const factorOf3 = {
+
+            name: "factorOf3",
+
+            getValue: digits => {
+                let result = false;
+                if (number % 3 === 0) {
+                    result = true;
+                } 
+
+            return result;
+            },
+
+            getText: value => {
+                if (value === true) {
+                        return `I am a multiple of 3`;
+                } else {
+                        return `I am not a multiple of 3`
+                }
+            },
+
+            remainingCandidates: value => {
+                const candArray = candidates.filter(candidate => {
+                    // const candidateDigits = candidate.split('').map(Number);
+                    if (candidate % 3 === 0 && value === true) {
+                        return true;
+                    } else if (candidate % 3 !== 0 && value === false) {
+                        return true;
+                    }
+                    return false;});
+                return candArray;
+            },
+
+            shortText: digits =>
+                factorOf3.getText(factorOf3.getValue(digits)),
+
+            shortCand: digits =>
+                factorOf3.remainingCandidates(factorOf3.getValue(digits))
+        };
+
         // clue log
         const clueLog = [
             cDigitProduct,
@@ -369,11 +449,10 @@ window.addEventListener("load", async() => {
             cBGreaterC,
             cAGreaterB,
             cMaxDigit,
-            cMinDigit
+            cMinDigit,
+            factorOf7,
+            factorOf3
         ]
-
-        console.log("digits: ", digits);
-        console.log("the number is: ", number);
 
         // loop to find valid puzzle with unique solution set
         let availableClues = [...clueLog];
@@ -408,20 +487,16 @@ window.addEventListener("load", async() => {
 
             // no solution — try new clues
             if (solutionSet.length === 0) {
-                console.log("no solution, restarting with new clues");
                 continue;
             }
 
             // unique solution — we're done
             if (solutionSet.length === 1) {
-                console.log("unique solution found!");
                 break;
             }
 
             // try to find a 5th clue that produces a unique solution
             while (solutionSet.length > 1 && availableClues.length > 0) {
-
-                console.log("multiple solutions, looking for a 5th clue");
 
                 // pick a possible 5th clue
                 const clue = availableClues.splice(Math.floor(Math.random() * availableClues.length),1)[0];
@@ -443,7 +518,6 @@ window.addEventListener("load", async() => {
                 // This clue didn't work.
                 // It's already been removed from availableClues,
                 // so simply let the loop try another one.
-                console.log("this 5th clue didn't work, trying another");
             }
 
             // if we didn't get exactly one solution, restart
@@ -454,7 +528,6 @@ window.addEventListener("load", async() => {
             // if exactly one solution, we're done
             // if zero or still multiple, restart with new clues
             if (solutionSet.length === 1) {
-                console.log("unique solution found!");
                 break;
             }
         }
