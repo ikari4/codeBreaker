@@ -16,6 +16,7 @@ window.addEventListener("load", async() => {
             partialSum = digits[i]*10**(3-i);
             number += partialSum;
         }
+        console.log(`The number is ${number}`);
 
         // create array of candidates
         let candidates = [];
@@ -421,7 +422,6 @@ window.addEventListener("load", async() => {
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
-                    // const candidateDigits = candidate.split('').map(Number);
                     if (candidate % 3 === 0 && value === true) {
                         return true;
                     } else if (candidate % 3 !== 0 && value === false) {
