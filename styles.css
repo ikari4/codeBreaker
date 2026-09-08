@@ -59,10 +59,12 @@ body {
     border: 2px solid #33ff33;
 
     font-family: "DejaVu Sans Mono", monospace;
-    font-size: 32px;
+    font-size: 28px;
     text-align: center;
 
     outline: none;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .digitInput:focus {
