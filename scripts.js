@@ -34,7 +34,7 @@ window.addEventListener("load", async() => {
                 digits.reduce((product, digit) => product * digit, 1),
 
             getText: value =>
-                `The product of my digits is ${value}`,
+                `The product of<br>my digits is ${value}`,
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
@@ -63,7 +63,7 @@ window.addEventListener("load", async() => {
                 digits.reduce((sum, digit) => sum + digit, 0),
 
             getText: value =>
-                `The sum of my digits is ${value}`,
+                `The sum of my<br>digits is ${value}`,
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
@@ -94,7 +94,7 @@ window.addEventListener("load", async() => {
             },
 
             getText: value =>
-                `My first and last digits sum to ${value}`,
+                `My first and last<br>digits sum to ${value}`,
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
@@ -126,7 +126,7 @@ window.addEventListener("load", async() => {
             },
 
             getText: value =>
-                `My second and fourth digits sum to ${value}`,
+                `My second and fourth<br>digits sum to ${value}`,
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
@@ -158,7 +158,7 @@ window.addEventListener("load", async() => {
             },
 
             getText: value =>
-                `The product of my first and third digits is ${value}`,
+                `The product of my first<br>and third digits is ${value}`,
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
@@ -189,7 +189,7 @@ window.addEventListener("load", async() => {
             },
 
             getText: value =>
-                `The product of my third and fourth digits is ${value}`,
+                `The product of my third<br>and fourth digits is ${value}`,
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
@@ -225,9 +225,9 @@ window.addEventListener("load", async() => {
 
             getText: value => {
                 if (value === true) {
-                        return `My second digit is greater than my third digit`;
+                        return `My second digit is greater<br>than my third digit`;
                 } else {
-                        return `My second digit is not greater than my third digit`
+                        return `My second digit is not<br>greater than my third digit`
                 }
             },
 
@@ -266,9 +266,9 @@ window.addEventListener("load", async() => {
 
             getText: value => {
                 if (value === true) {
-                        return `My first digit is greater than my second digit`;
+                        return `My first digit is greater<br>than my second digit`;
                 } else {
-                        return `My first digit is not greater than my second digit`
+                        return `My first digit is not<br>greater than my second digit`
                 }
             },
 
@@ -303,7 +303,7 @@ window.addEventListener("load", async() => {
             },
 
             getText: value =>
-                `None of my digits are greater than the one in position ${value + 1}`,
+                `None of my digits are<br>greater than digit ${value + 1}`,
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
@@ -336,7 +336,7 @@ window.addEventListener("load", async() => {
             },
 
             getText: value =>
-                `None of my digits are less than the one in position ${value + 1}`,
+                `None of my digits are<br>less than digit ${value + 1}`,
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
@@ -363,6 +363,11 @@ window.addEventListener("load", async() => {
             name: "factorOf7",
 
             getValue: digits => {
+                let number = 0;
+                for (let i = 0; i < 4; i++) {
+                    partialSum = digits[i]*10**(3-i);
+                    number += partialSum;
+                }
                 let result = false;
                 if (number % 7 === 0) {
                     result = true;
@@ -381,7 +386,6 @@ window.addEventListener("load", async() => {
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
-                    // const candidateDigits = candidate.split('').map(Number);
                     if (candidate % 7 === 0 && value === true) {
                         return true;
                     } else if (candidate % 7 !== 0 && value === false) {
@@ -404,6 +408,11 @@ window.addEventListener("load", async() => {
             name: "factorOf3",
 
             getValue: digits => {
+                let number = 0;
+                for (let i = 0; i < 4; i++) {
+                    partialSum = digits[i]*10**(3-i);
+                    number += partialSum;
+                }
                 let result = false;
                 if (number % 3 === 0) {
                     result = true;
@@ -587,7 +596,7 @@ window.addEventListener("load", async() => {
         
         selectedClues.forEach(clue => {
             const clueElement = document.createElement("p");
-            clueElement.textContent = clue.shortText(digits);
+            clueElement.innerHTML = clue.shortText(digits);
             cluesDiv.appendChild(clueElement);
         });
     }
@@ -614,7 +623,7 @@ window.addEventListener("load", async() => {
         }
 
         if (guess === solutionSet[0]) {
-            messageDiv.textContent = "Correct! You've cracked the code!";
+            messageDiv.innerHTML = "Correct!<br>You've cracked the code!";
             messageDiv.style.color = "#22cc44";
 
             submitGuess.style.display = "none";
@@ -622,7 +631,7 @@ window.addEventListener("load", async() => {
             playAgainButton.style.display = "block";
 
         } else {
-            messageDiv.textContent = "Incorrect guess. Try again!";
+            messageDiv.innerHTML = "Incorrect guess!<br>Try again!";
             messageDiv.style.color = "#ff4444";
 
             digitInputs.forEach(input => input.value = "");
