@@ -1,5 +1,13 @@
 window.addEventListener("load", async() => {
     let solutionSet = [];
+
+    function getSolutionSet(clues, digits) {
+        const clueSet = clues.map(clue => clue.shortCand(digits));
+
+        return clueSet[0].filter(number =>
+            clueSet.every(array => array.includes(number))
+        );
+    }
     
     function newGame() {
 
@@ -481,18 +489,8 @@ window.addEventListener("load", async() => {
 
             selectedClues.push(clue1, clue2, clue3, clue4);
 
-            // get candidate numbers for each clue
-            const clueSet = [
-                clue1.shortCand(digits),
-                clue2.shortCand(digits),
-                clue3.shortCand(digits),
-                clue4.shortCand(digits)
-            ];
-
-            // find numbers common to both clues
-            solutionSet = clueSet[0].filter(number =>
-                clueSet.every(array => array.includes(number))
-            );
+            // get initial solution set
+            solutionSet = getSolutionSet(selectedClues, digits);
 
             // no solution — try new clues
             if (solutionSet.length === 0) {
@@ -541,7 +539,41 @@ window.addEventListener("load", async() => {
             }
         }
 
-            digitInputs.forEach((input, index) => {
+// 
+console.log(`The clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
+// 
+        // Remove any clues that are not necessary
+        let i = 0;
+
+        while (i < selectedClues.length) {
+
+            // Don't remove the last clue
+            if (selectedClues.length === 1) {
+                break;
+            }
+
+            // Test all clues except the current one
+            const testClues = selectedClues.filter((_, index) => index !== i);
+
+            // Recalculate the solution set without this clue
+            const testSolutionSet = getSolutionSet(testClues, digits);
+
+            // If we still have a unique solution,
+            // this clue is redundant
+            if (testSolutionSet.length === 1) {
+                selectedClues.splice(i, 1);
+            } else {
+                // This clue is necessary
+                i++;
+            }
+        }
+// 
+console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
+// 
+        // Recalculate the final solution set
+        solutionSet = getSolutionSet(selectedClues, digits);
+
+        digitInputs.forEach((input, index) => {
 
             digitInputs.forEach(input => input.disabled = false);
             input.addEventListener("input", () => {
@@ -623,7 +655,7 @@ window.addEventListener("load", async() => {
         }
 
         if (guess === solutionSet[0]) {
-            messageDiv.innerHTML = "Correct!<br>You've cracked the code!";
+            messageDiv.innerHTML = "Correct!<br>You cracked the code!";
             messageDiv.style.color = "#22cc44";
 
             submitGuess.style.display = "none";
