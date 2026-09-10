@@ -18,13 +18,7 @@ window.addEventListener("load", async() => {
             digits[i] = num;
         }
 
-        // create complete number and matching string from digits
-        let number = 0;
-        for (let i = 0; i < 4; i++) {
-            partialSum = digits[i]*10**(3-i);
-            number += partialSum;
-        }
-        console.log(`The number is ${number}`);
+        console.log(`The number is ${digits.join("")}`);
 
         // create array of candidates
         let candidates = [];
@@ -655,7 +649,7 @@ console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(",
         }
 
         if (guess === solutionSet[0]) {
-            messageDiv.innerHTML = "Correct!<br>You've cracked the code!";
+            messageDiv.innerHTML = "Correct!<br>You've cracked it!";
             messageDiv.style.color = "#22cc44";
 
             submitGuess.style.display = "none";
