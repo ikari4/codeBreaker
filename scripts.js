@@ -655,7 +655,7 @@ console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(",
         }
 
         if (guess === solutionSet[0]) {
-            messageDiv.innerHTML = "Correct!<br>You cracked the code!";
+            messageDiv.innerHTML = "Correct!<br>You've cracked the code!";
             messageDiv.style.color = "#22cc44";
 
             submitGuess.style.display = "none";
