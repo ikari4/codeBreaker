@@ -743,7 +743,7 @@ console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(",
 
     newGame();
 
-    submitGuess.addEventListener("click", () => {
+    submitGuess.addEventListener("click", async() => {
 
         const guess = [...digitInputs]
             .map(input => input.value)
@@ -754,7 +754,7 @@ console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(",
         }
 
         if (guess === solutionSet[0]) {
-            playCorrectSound();
+            await playCorrectSound();
             messageDiv.innerHTML = "Correct!<br>You've cracked it!";
             messageDiv.style.color = "#22cc44";
 
@@ -763,7 +763,7 @@ console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(",
             playAgainButton.style.display = "block";
 
         } else {
-            playIncorrectSound();
+            await playIncorrectSound();
             messageDiv.innerHTML = "Incorrect guess!<br>Try again!";
             messageDiv.style.color = "#ff4444";
 
@@ -772,8 +772,8 @@ console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(",
         }
     });
 
-    playAgainButton.addEventListener("click", () => {
-        playAgainSound();
+    playAgainButton.addEventListener("click", async () => {
+        await playAgainSound();
         newGame();
     });
 
