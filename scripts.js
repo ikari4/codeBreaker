@@ -238,7 +238,7 @@ window.addEventListener("load", async() => {
                     const candidateDigits = candidate.split('').map(Number);
                     if (candidateDigits[1] > candidateDigits[2] && value === true) {
                         return true;
-                    } else if (candidateDigits[1] < candidateDigits[2] && value === false) {
+                    } else if (candidateDigits[1] <= candidateDigits[2] && value === false) {
                         return true;
                     }
                     return false;});
@@ -279,7 +279,7 @@ window.addEventListener("load", async() => {
                     const candidateDigits = candidate.split('').map(Number);
                     if (candidateDigits[0] > candidateDigits[1] && value === true) {
                         return true;
-                    } else if (candidateDigits[0] < candidateDigits[1] && value === false) {
+                    } else if (candidateDigits[0] <= candidateDigits[1] && value === false) {
                         return true;
                     }
                     return false;});
