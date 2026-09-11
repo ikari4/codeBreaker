@@ -1,5 +1,6 @@
 window.addEventListener("load", async() => {
     let solutionSet = [];
+    let audioCtx = null;
 
     function getSolutionSet(clues, digits) {
         const clueSet = clues.map(clue => clue.shortCand(digits));
@@ -8,7 +9,111 @@ window.addEventListener("load", async() => {
             clueSet.every(array => array.includes(number))
         );
     }
-    
+
+    async function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        if (audioCtx.state === "suspended") {
+            await audioCtx.resume();
+        }
+    }
+
+    async function playCorrectSound() {
+        await initAudio();
+
+        const now = audioCtx.currentTime;
+
+        const notes = [
+            { frequency: 523.25, start: 0.00, duration: 0.12, volume: 0.10 }, // C5 - TA
+            { frequency: 659.25, start: 0.10, duration: 0.12, volume: 0.11 }, // E5
+            { frequency: 783.99, start: 0.20, duration: 0.35, volume: 0.16 }  // G5 - DA!
+        ];
+
+        notes.forEach(note => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(note.frequency, now + note.start);
+
+            const start = now + note.start;
+            const end = start + note.duration;
+
+            gain.gain.setValueAtTime(0.0001, start);
+            gain.gain.exponentialRampToValueAtTime(note.volume, start + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, end);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(start);
+            osc.stop(end);
+        });
+    }
+
+    async function playIncorrectSound() {
+        await initAudio();
+
+        const now = audioCtx.currentTime;
+
+        const notes = [
+            { frequency: 330, start: 0.00, duration: 0.14, volume: 0.10 }, // E4
+            { frequency: 247, start: 0.11, duration: 0.18, volume: 0.12 }, // B3
+            { frequency: 175, start: 0.25, duration: 0.28, volume: 0.14 }  // F3
+        ];
+
+        notes.forEach(note => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            const start = now + note.start;
+            const end = start + note.duration;
+
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(note.frequency, start);
+
+            gain.gain.setValueAtTime(0.0001, start);
+            gain.gain.exponentialRampToValueAtTime(note.volume, start + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, end);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(start);
+            osc.stop(end);
+        });
+    }
+
+    async function playAgainSound() {
+        await initAudio();
+
+        const now = audioCtx.currentTime;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = "triangle";
+
+        // Rising "let's go again!" phrase
+        osc.frequency.setValueAtTime(261.63, now);        // C4
+        osc.frequency.linearRampToValueAtTime(329.63, now + 0.12); // E4
+        osc.frequency.linearRampToValueAtTime(392.00, now + 0.24); // G4
+        osc.frequency.linearRampToValueAtTime(523.25, now + 0.38); // C5
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.10, now + 0.03);
+        gain.gain.setValueAtTime(0.10, now + 0.32);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.56);
+    }
+
     function newGame() {
 
         // randomly select the four digits for the puzzle
@@ -649,6 +754,7 @@ console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(",
         }
 
         if (guess === solutionSet[0]) {
+            playCorrectSound();
             messageDiv.innerHTML = "Correct!<br>You've cracked it!";
             messageDiv.style.color = "#22cc44";
 
@@ -657,6 +763,7 @@ console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(",
             playAgainButton.style.display = "block";
 
         } else {
+            playIncorrectSound();
             messageDiv.innerHTML = "Incorrect guess!<br>Try again!";
             messageDiv.style.color = "#ff4444";
 
@@ -666,6 +773,7 @@ console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(",
     });
 
     playAgainButton.addEventListener("click", () => {
+        playAgainSound();
         newGame();
     });
 
