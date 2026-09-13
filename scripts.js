@@ -123,7 +123,9 @@ window.addEventListener("load", async() => {
             digits[i] = num;
         }
 
-        console.log(`The number is ${digits.join("")}`);
+        //
+        // console.log(`The number is ${digits.join("")}`);
+        //
 
         // create array of candidates
         let candidates = [];
@@ -638,9 +640,10 @@ window.addEventListener("load", async() => {
             }
         }
 
-// 
-console.log(`The clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
-// 
+        // 
+        // console.log(`The clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
+        // 
+        
         // Remove any clues that are not necessary
         let i = 0;
 
@@ -666,9 +669,9 @@ console.log(`The clues are: ${selectedClues.map(clue => clue.name).join(", ")}`)
                 i++;
             }
         }
-// 
-console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
-// 
+        // 
+        // console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
+        // 
         // Recalculate the final solution set
         solutionSet = getSolutionSet(selectedClues, digits);
 
