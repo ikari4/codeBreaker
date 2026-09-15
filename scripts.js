@@ -417,12 +417,12 @@ window.addEventListener("load", async() => {
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
                     const candidateDigits = candidate.split('').map(Number);
+
+                    const referenceValue = candidateDigits[value];
                     const maxVal = Math.max(...candidateDigits);
-                    const maxIndex = candidateDigits.indexOf(maxVal);
-                    if (maxIndex === value) {
-                        return true;
-                    }
-                    return false;});
+
+                    return referenceValue === maxVal;
+                });
                 return candArray;
             },
 
@@ -450,12 +450,12 @@ window.addEventListener("load", async() => {
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
                     const candidateDigits = candidate.split('').map(Number);
+
+                    const referenceValue = candidateDigits[value];
                     const minVal = Math.min(...candidateDigits);
-                    const minIndex = candidateDigits.indexOf(minVal);
-                    if (minIndex === value) {
-                        return true;
-                    }
-                    return false;});
+
+                    return referenceValue === minVal;
+                });
                 return candArray;
             },
 
