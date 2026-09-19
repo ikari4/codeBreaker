@@ -2,11 +2,20 @@ window.addEventListener("load", async() => {
     let solutionSet = [];
     let audioCtx = null;
 
-    function getSolutionSet(clues, digits) {
-        const clueSet = clues.map(clue => clue.shortCand(digits));
+    function getSolutionSet(clues, digits, candidateCache) {
+        console.time("starting getSolutionSet");
+        const clueSet = clues.map(clue => {
+            if (!candidateCache.has(clue.name)) {
+                candidateCache.set(
+                    clue.name,
+                    clue.shortCand(digits)
+                );
+            }
+            return candidateCache.get(clue.name);
+        });
 
-        return clueSet[0].filter(number =>
-            clueSet.every(array => array.includes(number))
+        console.timeEnd("starting getSolutionSet");
+        return clueSet[0].filter(number => clueSet.every(array => array.includes(number))
         );
     }
 
@@ -115,24 +124,31 @@ window.addEventListener("load", async() => {
     }
 
     function newGame() {
-
-        // randomly select the four digits for the puzzle
+        // randomly select the digits for the puzzle
         let digits = [];
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < digitNum; i++) {
             const num = Math.floor( Math.random() * 10 );
             digits[i] = num;
         }
-
         //
-        // console.log(`The number is ${digits.join("")}`);
+        console.log(`The number is ${digits.join("")}`);
         //
-
         // create array of candidates
         let candidates = [];
-        for (let i = 0; i < 10000; i++) {
-            stringNum = i.toString().padStart(4, '0');
+        for (let i = 0; i < Math.pow(10, digitNum); i++) {
+            stringNum = i.toString().padStart(digitNum, '0');
             candidates.push(stringNum);
         }
+
+        digitValues.fill(0);
+
+        digitDisplays.forEach(display => {
+            display.textContent = "0";
+        });
+
+        digitButtons.forEach(button => {
+            button.disabled = false;
+        });
 
         // clue - product of the digits
         const cDigitProduct = {
@@ -203,7 +219,7 @@ window.addEventListener("load", async() => {
             },
 
             getText: value =>
-                `My first and last<br>digits sum to ${value}`,
+                `My first and fourth<br>digits sum to ${value}`,
 
             remainingCandidates: value => {
                 const candArray = candidates.filter(candidate => {
@@ -316,6 +332,68 @@ window.addEventListener("load", async() => {
 
             shortCand: digits =>
                 cCDProduct.remainingCandidates(cCDProduct.getValue(digits))
+        };
+
+        // clue - product of first three digits in abcd or abcde
+        const cFirstThreeProduct = {
+
+            name: "cFirstThreeProduct",
+
+            getValue: digits => {
+                const product = digits[0] * digits[1] * digits[2];
+                return product;
+            },
+
+            getText: value =>
+                `The product of my first<br>three digits is ${value}`,
+
+            remainingCandidates: value => {
+                const candArray = candidates.filter(candidate => {
+                    const candidateDigits = candidate.split('').map(Number);
+                    if (candidateDigits[0] * candidateDigits[1] * candidateDigits[2] === value) {
+                        return true;
+                    }
+                    return false;
+                });
+                return candArray;
+            },
+
+            shortText: digits =>
+                cFirstThreeProduct.getText(cFirstThreeProduct.getValue(digits)),
+
+            shortCand: digits =>
+                cFirstThreeProduct.remainingCandidates(cFirstThreeProduct.getValue(digits))
+        };
+
+        // clue - product of last three digits in abcd or abcde
+        const cLastThreeProduct = {
+
+            name: "cLastThreeProduct",
+
+            getValue: digits => {
+                const product = digits[digits.length - 3] * digits[digits.length - 2] * digits[digits.length - 1];
+                return product;
+            },
+
+            getText: value =>
+                `The product of my last<br>three digits is ${value}`,
+
+            remainingCandidates: value => {
+                const candArray = candidates.filter(candidate => {
+                    const candidateDigits = candidate.split('').map(Number);
+                    if (candidateDigits[digits.length - 3] * candidateDigits[digits.length - 2] * candidateDigits[digits.length - 1] === value) {
+                        return true;
+                    }
+                    return false;
+                });
+                return candArray;
+            },
+
+            shortText: digits =>
+                cLastThreeProduct.getText(cLastThreeProduct.getValue(digits)),
+
+            shortCand: digits =>
+                cLastThreeProduct.remainingCandidates(cLastThreeProduct.getValue(digits))
         };
 
         // clue - is b greater than c in abcd
@@ -556,6 +634,46 @@ window.addEventListener("load", async() => {
                 factorOf3.remainingCandidates(factorOf3.getValue(digits))
         };
 
+        // clue - is last digit even
+        const cLastEven = {
+
+            name: "cLastEven",
+
+            getValue: digits => {
+                let result = false;
+                if (digits[digitNum - 1] % 2 === 0) {
+                    result = true;
+                } 
+
+            return result;
+            },
+
+            getText: value => {
+                if (value === true) {
+                        return `My last digit is even`;
+                } else {
+                        return `My last digit is odd`;
+                }
+            },
+
+            remainingCandidates: value => {
+                const candArray = candidates.filter(candidate => {
+                    if (candidate[digitNum - 1] % 2 === 0 && value === true) {
+                        return true;
+                    } else if (candidate[digitNum - 1] % 2 === 1 && value === false) {
+                        return true;
+                    }
+                    return false;});
+                return candArray;
+            },
+
+            shortText: digits =>
+                cLastEven.getText(cLastEven.getValue(digits)),
+
+            shortCand: digits =>
+                cLastEven.remainingCandidates(cLastEven.getValue(digits))
+        };
+
         // clue log
         const clueLog = [
             cDigitProduct,
@@ -569,29 +687,30 @@ window.addEventListener("load", async() => {
             cMaxDigit,
             cMinDigit,
             factorOf7,
-            factorOf3
+            factorOf3,
+            cLastEven,
+            cFirstThreeProduct,
+            cLastThreeProduct
         ]
 
         // loop to find valid puzzle with unique solution set
-        let availableClues = [...clueLog];
-        // let solutionSet;
-        let selectedClues = [];
 
+        let selectedClues = [];
+        let candidateCache = new Map();
         while (true) {
+
             // reset clues and solution set for each iteration
-            availableClues = [...clueLog];
+            let availableClues = [...clueLog];
             selectedClues = [];
 
-            // pick first two clues
-            const clue1 = availableClues.splice(Math.floor(Math.random() * availableClues.length),1)[0];
-            const clue2 = availableClues.splice(Math.floor(Math.random() * availableClues.length),1)[0];
-            const clue3 = availableClues.splice(Math.floor(Math.random() * availableClues.length),1)[0];
-            const clue4 = availableClues.splice(Math.floor(Math.random() * availableClues.length),1)[0];
-
-            selectedClues.push(clue1, clue2, clue3, clue4);
+            // pick the initial clues (number of clues = digitNum)
+            for (let i = 0; i < digitNum; i++) {
+                selectedClues[i] = availableClues.splice(Math.floor(Math.random() * availableClues.length),1)[0];
+            }
 
             // get initial solution set
-            solutionSet = getSolutionSet(selectedClues, digits);
+            console.log("call getSolutionSet with first set of clues");
+            solutionSet = getSolutionSet(selectedClues, digits, candidateCache);
 
             // no solution — try new clues
             if (solutionSet.length === 0) {
@@ -603,18 +722,17 @@ window.addEventListener("load", async() => {
                 break;
             }
 
-            // try to find a 5th clue that produces a unique solution
+            // try to find an extra clue that produces a unique solution
+
             while (solutionSet.length > 1 && availableClues.length > 0) {
 
-                // pick a possible 5th clue
+                // pick a possible extra clue
                 const clue = availableClues.splice(Math.floor(Math.random() * availableClues.length),1)[0];
+                const trialClueSet = [...selectedClues, clue];
 
                 // see what the solution set would be with this clue
-                const clueCandidates = clue.shortCand(digits);
-
-                const newSolutionSet = solutionSet.filter(number =>
-                    clueCandidates.includes(number)
-                );
+                console.log(`call getSolutionSet with extra clue: ${clue.name}`);
+                const newSolutionSet = getSolutionSet(trialClueSet, digits, candidateCache);
 
                 // this clue produces a unique solution — accept it
                 if (newSolutionSet.length === 1) {
@@ -630,6 +748,8 @@ window.addEventListener("load", async() => {
 
             // if we didn't get exactly one solution, restart
             if (solutionSet.length !== 1) {
+
+                console.log("ran out of clues to try for an extra clue; picking new starting clues...");
                 continue;
             }
 
@@ -641,9 +761,9 @@ window.addEventListener("load", async() => {
         }
 
         // 
-        // console.log(`The clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
+        console.log(`The clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
         // 
-        
+
         // Remove any clues that are not necessary
         let i = 0;
 
@@ -656,10 +776,9 @@ window.addEventListener("load", async() => {
 
             // Test all clues except the current one
             const testClues = selectedClues.filter((_, index) => index !== i);
-
             // Recalculate the solution set without this clue
-            const testSolutionSet = getSolutionSet(testClues, digits);
-
+            console.log(`call getSolutionSet to test if clue is necessary: ${selectedClues[i].name}`);
+            const testSolutionSet = getSolutionSet(testClues, digits, candidateCache);
             // If we still have a unique solution,
             // this clue is redundant
             if (testSolutionSet.length === 1) {
@@ -670,61 +789,13 @@ window.addEventListener("load", async() => {
             }
         }
         // 
-        // console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
+        console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
         // 
-        // Recalculate the final solution set
-        solutionSet = getSolutionSet(selectedClues, digits);
-
-        digitInputs.forEach((input, index) => {
-
-            digitInputs.forEach(input => input.disabled = false);
-            input.addEventListener("input", () => {
-
-                // Only allow digits
-                input.value = input.value.replace(/\D/g, "");
-
-                // Move to next box after entering a digit
-                if (input.value && index < digitInputs.length - 1) {
-                    digitInputs[index + 1].focus();
-                }
-            });
-
-            input.addEventListener("keydown", (event) => {
-
-                // Backspace on an empty box → move backwards
-                if (
-                    event.key === "Backspace" &&
-                    input.value === "" &&
-                    index > 0
-                ) {
-                    digitInputs[index - 1].focus();
-                }
-
-                // Optional: left/right arrow navigation
-                if (event.key === "ArrowLeft" && index > 0) {
-                    digitInputs[index - 1].focus();
-                }
-
-                if (
-                    event.key === "ArrowRight" &&
-                    index < digitInputs.length - 1
-                ) {
-                    digitInputs[index + 1].focus();
-                }
-            });
-        });
-
-        digitInputs.forEach(input => {
-            input.value = "";
-            input.style.display = "block";
-        });
 
         submitGuess.style.display = "block";
         playAgainButton.style.display = "none";
         messageDiv.textContent = "";
         cluesDiv.innerHTML = "";
-
-        digitInputs[0].focus();
 
         // clues
         
@@ -734,11 +805,68 @@ window.addEventListener("load", async() => {
             cluesDiv.appendChild(clueElement);
         });
     }
-    
+
     // populate the page
     // four guess boxes and a submit button
     const page = document.getElementById("page");
-    const digitInputs = document.querySelectorAll(".digitInput");
+    const guessDiv = document.getElementById("guessDiv");
+    let digitNum = 5;
+
+    // Set up input boxes for the digits
+    const digitDisplays = [];
+    const digitButtons = [];
+    const digitValues = [];
+
+    for (let i = 0; i < digitNum; i++) {
+        const digitBox = document.createElement("div");
+        digitBox.classList.add("digitBox");
+
+        const upButton = document.createElement("button");
+        upButton.textContent = "▲";
+        upButton.classList.add("digitUp");
+
+        const digitDisplay = document.createElement("div");
+        digitDisplay.textContent = "0";
+        digitDisplay.classList.add("digitDisplay");
+
+        const downButton = document.createElement("button");
+        downButton.textContent = "▼";
+        downButton.classList.add("digitDown");
+
+        digitValues[i] = 0;
+        let upTimeout;
+        let downTimeout;
+
+        upButton.addEventListener("click", () => {
+            if (upTimeout) return;
+
+            digitValues[i] = (digitValues[i] + 1) % 10;
+            digitDisplay.textContent = digitValues[i];
+
+            upTimeout = setTimeout(() => {
+                upTimeout = null;
+            }, 120);
+        });
+
+        downButton.addEventListener("click", () => {
+            if (downTimeout) return;
+
+            digitValues[i] = (digitValues[i] + 9) % 10;
+            digitDisplay.textContent = digitValues[i];
+
+            downTimeout = setTimeout(() => {
+                downTimeout = null;
+            }, 120);
+        });
+
+        // Store references to the displays and buttons
+        digitDisplays.push(digitDisplay);
+        digitButtons.push(upButton, downButton);
+
+        digitBox.append(upButton, digitDisplay, downButton);
+        guessDiv.append(digitBox);
+    }
+
     const submitGuess = document.getElementById("submitGuess");
     const cluesDiv = document.getElementById("cluesDiv");
     const messageDiv = document.getElementById("messageDiv");
@@ -746,37 +874,59 @@ window.addEventListener("load", async() => {
 
     newGame();
 
-    submitGuess.addEventListener("click", async() => {
+    submitGuess.addEventListener("click", async () => {
 
-        const guess = [...digitInputs]
-            .map(input => input.value)
-            .join("");
-
-        if (guess.length !== 4) {
-            return;
-        }
+        const guess = digitValues.join("");
 
         if (guess === solutionSet[0]) {
             await playCorrectSound();
+
             messageDiv.innerHTML = "Correct!<br>You've cracked it!";
             messageDiv.style.color = "#22cc44";
 
             submitGuess.style.display = "none";
-            digitInputs.forEach(input => input.disabled = true);
+
+            // disable all up/down buttons
+            digitButtons.forEach(button => {
+                button.disabled = true;
+            });
+
             playAgainButton.style.display = "block";
 
         } else {
             await playIncorrectSound();
+
             messageDiv.innerHTML = "Incorrect guess!<br>Try again!";
             messageDiv.style.color = "#ff4444";
-
-            digitInputs.forEach(input => input.value = "");
-            digitInputs[0].focus();
         }
     });
 
     playAgainButton.addEventListener("click", async () => {
-        await playAgainSound();
+
+        cluesDiv.innerHTML = `
+            <div class="creatingPuzzle">
+                Creating new puzzle<span class="loadingDots"></span>
+            </div>
+        `;
+
+        messageDiv.innerHTML = "";
+
+        digitValues.fill(0);
+
+        digitDisplays.forEach(display => {
+            display.textContent = "0";
+        });
+
+        digitButtons.forEach(button => {
+            button.disabled = false;
+        });
+
+        submitGuess.style.display = "block";
+        playAgainButton.style.display = "none";
+
+        // Give the browser time to display the loading message
+        await new Promise(resolve => setTimeout(resolve, 50));
+
         newGame();
     });
 
