@@ -5,21 +5,10 @@ window.addEventListener("load", async() => {
     const digitButtons = [];
     const digitValues = [];
 
-    function getClueCandidates(clue, digits, candidateCache) {
-        if (!candidateCache.has(clue.name)) {
-            candidateCache.set(
-                clue.name,
-                new Set(clue.remainingCandidates(clue.getValue(digits)))
-            );
-        }
-
-        return candidateCache.get(clue.name);
-    }
-    
-    function getSolutionSet(clues, digits, candidateCache) {
-
+    function getSolutionSet(clues, candidateCache) {
+        // returns the commom solution set for the sent clues
         const clueSet = clues.map(clue =>
-            getClueCandidates(clue, digits, candidateCache)
+            candidateCache.get(clue.name)
         );
 
         // start with the smallest set to minimize filtering
@@ -137,15 +126,14 @@ window.addEventListener("load", async() => {
         osc.stop(now + 0.56);
     }
 
-    function findSmallestClue(availableClues, digits, candidateCache) {
-
+    function findSmallestClue(availableClues, candidateCache) {
+        // returns clue that has the smallest solution set to use as a starting clue
         let bestClue = null;
         let smallestSize = Infinity;
 
         availableClues.forEach(clue => {
 
-            const clueCandidates =
-                getClueCandidates(clue, digits, candidateCache);
+            const clueCandidates = candidateCache.get(clue.name);
 
             if (clueCandidates.size < smallestSize) {
                 bestClue = clue;
@@ -156,16 +144,15 @@ window.addEventListener("load", async() => {
         return bestClue;
     }
 
-    function findBestClue(availableClues, solutionSet, digits, candidateCache) {
-
+    function findBestClue(availableClues, solutionSet, candidateCache) {
+        // returns clue that reduces the solutionSet the most
         let bestClue = null;
         let bestSolutionSet = null;
         let smallestSize = Infinity;
 
         availableClues.forEach(clue => {
 
-            const clueCandidates =
-                getClueCandidates(clue, digits, candidateCache);
+            const clueCandidates = candidateCache.get(clue.name);
 
             const newSolutionSet = solutionSet.filter(number =>
                 clueCandidates.has(number)
@@ -204,6 +191,7 @@ window.addEventListener("load", async() => {
             candidates.push(stringNum);
         }
 
+        // reset digit display
         digitValues.fill(0);
 
         digitDisplays.forEach(display => {
@@ -652,40 +640,31 @@ window.addEventListener("load", async() => {
         // loop to find valid puzzle with unique solution set
 
         let selectedClues = [];
+
+        // create cache of solution sets for all clues given puzzle digits
+        let candidateCache = new Map();
+        clueLog.forEach (clue => {
+            candidateCache.set(clue.name, new Set(clue.remainingCandidates(clue.getValue(digits))));
+        })
                 
         while (true) {
-
             // reset clues and solution set for each iteration
             let availableClues = [...clueLog];
             selectedClues = [];
-            let candidateCache = new Map();
 
             // pick the clue that produces the smallest candidate set
-            const firstClue = findSmallestClue(
-                availableClues,
-                digits,
-                candidateCache
-            );
+            const firstClue = findSmallestClue(availableClues, candidateCache);
 
             availableClues.splice(availableClues.indexOf(firstClue), 1);
 
             selectedClues.push(firstClue);
 
-            solutionSet = getSolutionSet(
-                selectedClues,
-                digits,
-                candidateCache
-            );
+            solutionSet = getSolutionSet(selectedClues, candidateCache);
 
             // greedily add the clue that reduces the solution set the most
             while (solutionSet.length > 1 && availableClues.length > 0) {
 
-                const best = findBestClue(
-                    availableClues,
-                    solutionSet,
-                    digits,
-                    candidateCache
-                );
+                const best = findBestClue(availableClues, solutionSet, candidateCache);
 
                 if (!best.clue) {
                     break;
@@ -707,45 +686,9 @@ window.addEventListener("load", async() => {
             if (solutionSet.length === 1) {
                 break;
             }
-
-            // try to find an extra clue that produces a unique solution
-
-            while (solutionSet.length > 1 && availableClues.length > 0) {
-
-                // pick a possible extra clue
-                const clue = availableClues.splice(Math.floor(Math.random() * availableClues.length),1)[0];
-                const trialClueSet = [...selectedClues, clue];
-
-                // see what the solution set would be with this clue
-                const newSolutionSet = getSolutionSet(trialClueSet, digits, candidateCache);
-
-                // this clue produces a unique solution — accept it
-                if (newSolutionSet.length === 1) {
-                    solutionSet = newSolutionSet;
-                    selectedClues.push(clue);
-                    break;
-                }
-
-                // This clue didn't work.
-                // It's already been removed from availableClues,
-                // so simply let the loop try another one.
-            }
-
-            // if we didn't get exactly one solution, restart
-            if (solutionSet.length !== 1) {
-                continue;
-            }
-
-            // if exactly one solution, we're done
-            // if zero or still multiple, restart with new clues
-            if (solutionSet.length === 1) {
-                break;
-            }
-        }
+          }
 
         // remove any clues that are not necessary by testing without them one by one
-        let candidateCache = new Map();
-
         let i = 0;
 
         while (i < selectedClues.length) {
@@ -759,11 +702,7 @@ window.addEventListener("load", async() => {
             const testClues = selectedClues.filter((_, index) => index !== i);
 
             // recalculate the solution set without this clue
-            const testSolutionSet = getSolutionSet(
-                testClues,
-                digits,
-                candidateCache
-            );
+            const testSolutionSet = getSolutionSet(testClues, candidateCache);
 
             // if we still have a unique solution then this clue is redundant
             if (testSolutionSet.length === 1) {
@@ -884,6 +823,7 @@ window.addEventListener("load", async() => {
         newGame();
     }
 
+    // main script starts here
     // populate the page
     const page = document.getElementById("page");
     const guessDiv = document.getElementById("guessDiv");
@@ -892,7 +832,7 @@ window.addEventListener("load", async() => {
     // user choice of four or five digit game
     guessDiv.innerHTML = `
         <div class="gameChoice">
-            <p>Choose your game:</p>
+            <p>Choose code length to break</p>
             <button id="fourDigitButton">4 Digits</button>
             <button id="fiveDigitButton">5 Digits</button>
         </div>
@@ -913,7 +853,7 @@ window.addEventListener("load", async() => {
     const playAgainButton = document.getElementById("playAgainButton");
 
     playAgainButton.addEventListener("click", async () => {
-
+        await playAgainSound();
         cluesDiv.innerHTML = `
             <div class="creatingPuzzle">
                 Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
@@ -935,7 +875,7 @@ window.addEventListener("load", async() => {
         submitGuess.style.display = "block";
         playAgainButton.style.display = "none";
 
-        // Give the browser time to display the loading message
+        // give the browser time to display the loading message
         await new Promise(resolve => setTimeout(resolve, 50));
 
         newGame();
