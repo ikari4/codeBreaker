@@ -698,7 +698,8 @@ window.addEventListener("load", async() => {
 
         submitGuess.style.display = "block";
         playAgainButton.style.display = "none";
-        messageDiv.textContent = "";
+        messageDiv.textContent = `The number is ${digits.join("")}`;
+        // messageDiv.textContent = "";
         cluesDiv.innerHTML = "";
 
         // display clues on the screen
