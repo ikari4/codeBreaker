@@ -104,7 +104,9 @@ body {
     gap: 8px;
 }
 
-#submitGuess {
+#submitGuess,
+#fourDigitButton,
+#fiveDigitButton {
     margin-left: 12px;
     height: 55px;
 

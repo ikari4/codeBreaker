@@ -1,22 +1,23 @@
 window.addEventListener("load", async() => {
     let solutionSet = [];
     let audioCtx = null;
+    const digitDisplays = [];
+    const digitButtons = [];
+    const digitValues = [];
 
     function getSolutionSet(clues, digits, candidateCache) {
-        console.time("starting getSolutionSet");
 
         // find solution set for any clue not in candidateCache and store all in clueSet
         const clueSet = clues.map(clue => {
             if (!candidateCache.has(clue.name)) {
                 candidateCache.set(
                     clue.name,
-                    clue.shortCand(digits)
+                    clue.remainingCandidates(clue.getValue(digits))
                 );
             }
             return candidateCache.get(clue.name);
         });
 
-        console.timeEnd("starting getSolutionSet");
         // return solution set common to all clues in clueSet
         return clueSet[0].filter(number => clueSet.every(array => array.includes(number))
         );
@@ -173,13 +174,7 @@ window.addEventListener("load", async() => {
                     }
                     return false;});
                 return candArray;
-            },
-
-            shortText: digits =>
-                cDigitProduct.getText(cDigitProduct.getValue(digits)),
-
-            shortCand: digits =>
-                cDigitProduct.remainingCandidates(cDigitProduct.getValue(digits))
+            }
         };
 
         // clue - sum of the digits
@@ -202,13 +197,7 @@ window.addEventListener("load", async() => {
                     }
                     return false;});
                 return candArray;
-            },
-
-            shortText: digits =>
-                cDigitSum.getText(cDigitSum.getValue(digits)),
-
-            shortCand: digits =>
-                cDigitSum.remainingCandidates(cDigitSum.getValue(digits))
+            }
         };
 
         // clue - sum of a and d in abcd
@@ -234,13 +223,7 @@ window.addEventListener("load", async() => {
                     return false;
                 });
                 return candArray;
-            },
-
-            shortText: digits =>
-                cADSum.getText(cADSum.getValue(digits)),
-
-            shortCand: digits =>
-                cADSum.remainingCandidates(cADSum.getValue(digits))
+            }
         };
 
         // clue - sum of b and d in abcd
@@ -266,13 +249,7 @@ window.addEventListener("load", async() => {
                     return false;
                 });
                 return candArray;
-            },
-
-            shortText: digits =>
-                cBDSum.getText(cBDSum.getValue(digits)),
-
-            shortCand: digits =>
-                cBDSum.remainingCandidates(cBDSum.getValue(digits))
+            }
         };
 
         // clue - product of a and c in abcd
@@ -297,13 +274,7 @@ window.addEventListener("load", async() => {
                     return false;
                 });
                 return candArray;
-            },
-
-            shortText: digits =>
-                cACProduct.getText(cACProduct.getValue(digits)),
-
-            shortCand: digits =>
-                cACProduct.remainingCandidates(cACProduct.getValue(digits))
+            }
         };
 
         // clue - product of c and d in abcd
@@ -328,13 +299,7 @@ window.addEventListener("load", async() => {
                     return false;
                 });
                 return candArray;
-            },
-
-            shortText: digits =>
-                cCDProduct.getText(cCDProduct.getValue(digits)),
-
-            shortCand: digits =>
-                cCDProduct.remainingCandidates(cCDProduct.getValue(digits))
+            }
         };
 
         // clue - product of first three digits in abcd or abcde
@@ -359,13 +324,7 @@ window.addEventListener("load", async() => {
                     return false;
                 });
                 return candArray;
-            },
-
-            shortText: digits =>
-                cFirstThreeProduct.getText(cFirstThreeProduct.getValue(digits)),
-
-            shortCand: digits =>
-                cFirstThreeProduct.remainingCandidates(cFirstThreeProduct.getValue(digits))
+            }
         };
 
         // clue - product of last three digits in abcd or abcde
@@ -390,13 +349,7 @@ window.addEventListener("load", async() => {
                     return false;
                 });
                 return candArray;
-            },
-
-            shortText: digits =>
-                cLastThreeProduct.getText(cLastThreeProduct.getValue(digits)),
-
-            shortCand: digits =>
-                cLastThreeProduct.remainingCandidates(cLastThreeProduct.getValue(digits))
+            }
         };
 
         // clue - is b greater than c in abcd
@@ -431,13 +384,7 @@ window.addEventListener("load", async() => {
                     }
                     return false;});
                 return candArray;
-            },
-
-            shortText: digits =>
-                cBGreaterC.getText(cBGreaterC.getValue(digits)),
-
-            shortCand: digits =>
-                cBGreaterC.remainingCandidates(cBGreaterC.getValue(digits))
+            }
         };
 
         // clue - is a greater than b in abcd
@@ -472,13 +419,7 @@ window.addEventListener("load", async() => {
                     }
                     return false;});
                 return candArray;
-            },
-
-            shortText: digits =>
-                cAGreaterB.getText(cAGreaterB.getValue(digits)),
-
-            shortCand: digits =>
-                cAGreaterB.remainingCandidates(cAGreaterB.getValue(digits))
+            }
         };
 
         // clue - max digit
@@ -505,13 +446,7 @@ window.addEventListener("load", async() => {
                     return referenceValue === maxVal;
                 });
                 return candArray;
-            },
-
-            shortText: digits =>
-                cMaxDigit.getText(cMaxDigit.getValue(digits)),
-
-            shortCand: digits =>
-                cMaxDigit.remainingCandidates(cMaxDigit.getValue(digits))
+            }
         };
 
         // clue - min digit
@@ -538,13 +473,7 @@ window.addEventListener("load", async() => {
                     return referenceValue === minVal;
                 });
                 return candArray;
-            },
-
-            shortText: digits =>
-                cMinDigit.getText(cMinDigit.getValue(digits)),
-
-            shortCand: digits =>
-                cMinDigit.remainingCandidates(cMinDigit.getValue(digits))
+            }
         };
 
         // clue - is 7 a factor of the number
@@ -583,13 +512,7 @@ window.addEventListener("load", async() => {
                     }
                     return false;});
                 return candArray;
-            },
-
-            shortText: digits =>
-                factorOf7.getText(factorOf7.getValue(digits)),
-
-            shortCand: digits =>
-                factorOf7.remainingCandidates(factorOf7.getValue(digits))
+            }
         };
 
         // clue - is 3 a factor of the number
@@ -628,13 +551,7 @@ window.addEventListener("load", async() => {
                     }
                     return false;});
                 return candArray;
-            },
-
-            shortText: digits =>
-                factorOf3.getText(factorOf3.getValue(digits)),
-
-            shortCand: digits =>
-                factorOf3.remainingCandidates(factorOf3.getValue(digits))
+            }
         };
 
         // clue - is last digit even
@@ -668,13 +585,7 @@ window.addEventListener("load", async() => {
                     }
                     return false;});
                 return candArray;
-            },
-
-            shortText: digits =>
-                cLastEven.getText(cLastEven.getValue(digits)),
-
-            shortCand: digits =>
-                cLastEven.remainingCandidates(cLastEven.getValue(digits))
+            }
         };
 
         // clue log
@@ -713,7 +624,6 @@ window.addEventListener("load", async() => {
             }
 
             // get initial solution set
-            console.log("call getSolutionSet with first set of clues");
             solutionSet = getSolutionSet(selectedClues, digits, candidateCache);
 
             // no solution — try new clues
@@ -735,7 +645,6 @@ window.addEventListener("load", async() => {
                 const trialClueSet = [...selectedClues, clue];
 
                 // see what the solution set would be with this clue
-                console.log(`call getSolutionSet with extra clue: ${clue.name}`);
                 const newSolutionSet = getSolutionSet(trialClueSet, digits, candidateCache);
 
                 // this clue produces a unique solution — accept it
@@ -752,8 +661,6 @@ window.addEventListener("load", async() => {
 
             // if we didn't get exactly one solution, restart
             if (solutionSet.length !== 1) {
-
-                console.log("ran out of clues to try for an extra clue; picking new starting clues...");
                 continue;
             }
 
@@ -763,10 +670,6 @@ window.addEventListener("load", async() => {
                 break;
             }
         }
-
-        // 
-        console.log(`The clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
-        // 
 
         // remove any clues that are not necessary by testing without them one by one
         let i = 0;
@@ -782,7 +685,6 @@ window.addEventListener("load", async() => {
             const testClues = selectedClues.filter((_, index) => index !== i);
 
             // recalculate the solution set without this clue
-            console.log(`call getSolutionSet to test if clue is necessary: ${selectedClues[i].name}`);
             const testSolutionSet = getSolutionSet(testClues, digits, candidateCache);
 
             // if we still have a unique solution then this clue is redundant
@@ -793,9 +695,6 @@ window.addEventListener("load", async() => {
                 i++;
             }
         }
-        // 
-        console.log(`The final clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
-        // 
 
         submitGuess.style.display = "block";
         playAgainButton.style.display = "none";
@@ -805,104 +704,134 @@ window.addEventListener("load", async() => {
         // display clues on the screen
         selectedClues.forEach(clue => {
             const clueElement = document.createElement("p");
-            clueElement.innerHTML = clue.shortText(digits);
+            clueElement.innerHTML = clue.getText(clue.getValue(digits));
             cluesDiv.appendChild(clueElement);
         });
+    }
+
+    function startGame() {
+        guessDiv.innerHTML = "";
+
+        // reset the digit-control arrays
+        digitDisplays.length = 0;
+        digitButtons.length = 0;
+        digitValues.length = 0;
+
+        // create the digit controls for the selected game
+        for (let i = 0; i < digitNum; i++) {
+            const digitBox = document.createElement("div");
+            digitBox.classList.add("digitBox");
+
+            const upButton = document.createElement("button");
+            upButton.textContent = "▲";
+            upButton.classList.add("digitUp");
+
+            const digitDisplay = document.createElement("div");
+            digitDisplay.textContent = "0";
+            digitDisplay.classList.add("digitDisplay");
+
+            const downButton = document.createElement("button");
+            downButton.textContent = "▼";
+            downButton.classList.add("digitDown");
+
+            digitValues[i] = 0;
+
+            let upTimeout;
+            let downTimeout;
+
+            upButton.addEventListener("click", () => {
+                if (upTimeout) return;
+
+                digitValues[i] = (digitValues[i] + 1) % 10;
+                digitDisplay.textContent = digitValues[i];
+
+                upTimeout = setTimeout(() => {
+                    upTimeout = null;
+                }, 120);
+            });
+
+            downButton.addEventListener("click", () => {
+                if (downTimeout) return;
+
+                digitValues[i] = (digitValues[i] + 9) % 10;
+                digitDisplay.textContent = digitValues[i];
+
+                downTimeout = setTimeout(() => {
+                    downTimeout = null;
+                }, 120);
+            });
+
+            digitDisplays.push(digitDisplay);
+            digitButtons.push(upButton, downButton);
+
+            digitBox.append(upButton, digitDisplay, downButton);
+            guessDiv.append(digitBox);
+        }
+
+        const buttonDiv = document.getElementById("buttonDiv");
+        const submitGuess = document.createElement("button");
+        submitGuess.id = "submitGuess";
+        submitGuess.textContent = "SUBMIT";
+
+        submitGuess.addEventListener("click", async () => {
+
+            const guess = digitValues.join("");
+
+            if (guess === solutionSet[0]) {
+                await playCorrectSound();
+
+                messageDiv.innerHTML = "Correct!<br>You've cracked it!";
+                messageDiv.style.color = "#22cc44";
+
+                submitGuess.style.display = "none";
+
+                // disable all up/down buttons
+                digitButtons.forEach(button => {
+                    button.disabled = true;
+                });
+
+                playAgainButton.style.display = "block";
+
+            } else {
+                await playIncorrectSound();
+
+                messageDiv.innerHTML = "Incorrect guess!<br>Try again!";
+                messageDiv.style.color = "#ff4444";
+            }
+        });
+
+        buttonDiv.appendChild(submitGuess);
+
+        newGame();
     }
 
     // populate the page
     const page = document.getElementById("page");
     const guessDiv = document.getElementById("guessDiv");
-    let digitNum = 4;
+    let digitNum;
+    
+    // user choice of four or five digit game
+    guessDiv.innerHTML = `
+        <div class="gameChoice">
+            <p>Choose your game:</p>
+            <button id="fourDigitButton">4 Digits</button>
+            <button id="fiveDigitButton">5 Digits</button>
+        </div>
+    `;
 
-    const digitDisplays = [];
-    const digitButtons = [];
-    const digitValues = [];
+    document.getElementById("fourDigitButton").addEventListener("click", () => {
+        digitNum = 4;
+        startGame();
+    });
 
-    // set up input boxes for the digits dynamically per digitNum length
-    for (let i = 0; i < digitNum; i++) {
-        const digitBox = document.createElement("div");
-        digitBox.classList.add("digitBox");
-
-        const upButton = document.createElement("button");
-        upButton.textContent = "▲";
-        upButton.classList.add("digitUp");
-
-        const digitDisplay = document.createElement("div");
-        digitDisplay.textContent = "0";
-        digitDisplay.classList.add("digitDisplay");
-
-        const downButton = document.createElement("button");
-        downButton.textContent = "▼";
-        downButton.classList.add("digitDown");
-
-        digitValues[i] = 0;
-        let upTimeout;
-        let downTimeout;
-
-        upButton.addEventListener("click", () => {
-            if (upTimeout) return;
-
-            digitValues[i] = (digitValues[i] + 1) % 10;
-            digitDisplay.textContent = digitValues[i];
-
-            upTimeout = setTimeout(() => {
-                upTimeout = null;
-            }, 120);
-        });
-
-        downButton.addEventListener("click", () => {
-            if (downTimeout) return;
-
-            digitValues[i] = (digitValues[i] + 9) % 10;
-            digitDisplay.textContent = digitValues[i];
-
-            downTimeout = setTimeout(() => {
-                downTimeout = null;
-            }, 120);
-        });
-
-        // store references to the displays and buttons
-        digitDisplays.push(digitDisplay);
-        digitButtons.push(upButton, downButton);
-
-        digitBox.append(upButton, digitDisplay, downButton);
-        guessDiv.append(digitBox);
-    }
-
-    const submitGuess = document.getElementById("submitGuess");
+    document.getElementById("fiveDigitButton").addEventListener("click", () => {
+        digitNum = 5;
+        startGame();
+    });
+    
     const cluesDiv = document.getElementById("cluesDiv");
     const messageDiv = document.getElementById("messageDiv");
     const playAgainButton = document.getElementById("playAgainButton");
-
-    newGame();
-
-    submitGuess.addEventListener("click", async () => {
-
-        const guess = digitValues.join("");
-
-        if (guess === solutionSet[0]) {
-            await playCorrectSound();
-
-            messageDiv.innerHTML = "Correct!<br>You've cracked it!";
-            messageDiv.style.color = "#22cc44";
-
-            submitGuess.style.display = "none";
-
-            // disable all up/down buttons
-            digitButtons.forEach(button => {
-                button.disabled = true;
-            });
-
-            playAgainButton.style.display = "block";
-
-        } else {
-            await playIncorrectSound();
-
-            messageDiv.innerHTML = "Incorrect guess!<br>Try again!";
-            messageDiv.style.color = "#ff4444";
-        }
-    });
 
     playAgainButton.addEventListener("click", async () => {
 
