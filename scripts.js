@@ -5,21 +5,31 @@ window.addEventListener("load", async() => {
     const digitButtons = [];
     const digitValues = [];
 
+    function getClueCandidates(clue, digits, candidateCache) {
+        if (!candidateCache.has(clue.name)) {
+            candidateCache.set(
+                clue.name,
+                new Set(clue.remainingCandidates(clue.getValue(digits)))
+            );
+        }
+
+        return candidateCache.get(clue.name);
+    }
+    
     function getSolutionSet(clues, digits, candidateCache) {
 
-        // find solution set for any clue not in candidateCache and store all in clueSet
-        const clueSet = clues.map(clue => {
-            if (!candidateCache.has(clue.name)) {
-                candidateCache.set(
-                    clue.name,
-                    clue.remainingCandidates(clue.getValue(digits))
-                );
-            }
-            return candidateCache.get(clue.name);
-        });
+        const clueSet = clues.map(clue =>
+            getClueCandidates(clue, digits, candidateCache)
+        );
 
-        // return solution set common to all clues in clueSet
-        return clueSet[0].filter(number => clueSet.every(array => array.includes(number))
+        // start with the smallest set to minimize filtering
+        const smallestSet = clueSet.reduce(
+            (smallest, current) =>
+                current.size < smallest.size ? current : smallest
+        );
+
+        return [...smallestSet].filter(number =>
+            clueSet.every(set => set.has(number))
         );
     }
 
@@ -127,6 +137,56 @@ window.addEventListener("load", async() => {
         osc.stop(now + 0.56);
     }
 
+    function findSmallestClue(availableClues, digits, candidateCache) {
+
+        let bestClue = null;
+        let smallestSize = Infinity;
+
+        availableClues.forEach(clue => {
+
+            const clueCandidates =
+                getClueCandidates(clue, digits, candidateCache);
+
+            if (clueCandidates.size < smallestSize) {
+                bestClue = clue;
+                smallestSize = clueCandidates.size;
+            }
+        });
+
+        return bestClue;
+    }
+
+    function findBestClue(availableClues, solutionSet, digits, candidateCache) {
+
+        let bestClue = null;
+        let bestSolutionSet = null;
+        let smallestSize = Infinity;
+
+        availableClues.forEach(clue => {
+
+            const clueCandidates =
+                getClueCandidates(clue, digits, candidateCache);
+
+            const newSolutionSet = solutionSet.filter(number =>
+                clueCandidates.has(number)
+            );
+
+            if (
+                newSolutionSet.length > 0 &&
+                newSolutionSet.length < smallestSize
+            ) {
+                bestClue = clue;
+                bestSolutionSet = newSolutionSet;
+                smallestSize = newSolutionSet.length;
+            }
+        });
+
+        return {
+            clue: bestClue,
+            solutionSet: bestSolutionSet
+        };
+    }
+
     function newGame() {
         // randomly select the digits for the puzzle
         let digits = [];
@@ -200,7 +260,7 @@ window.addEventListener("load", async() => {
             }
         };
 
-        // clue - sum of a and d in abcd
+        // clue - sum of a and d in abcd or abcde
         const cADSum = {
 
             name: "cADSum",
@@ -226,7 +286,7 @@ window.addEventListener("load", async() => {
             }
         };
 
-        // clue - sum of b and d in abcd
+        // clue - sum of b and d in abcd or abcde
         const cBDSum = {
 
             name: "cBDSum",
@@ -252,7 +312,7 @@ window.addEventListener("load", async() => {
             }
         };
 
-        // clue - product of a and c in abcd
+        // clue - product of a and c in abcd or abcde
         const cACProduct = {
 
             name: "cACProduct",
@@ -277,7 +337,7 @@ window.addEventListener("load", async() => {
             }
         };
 
-        // clue - product of c and d in abcd
+        // clue - product of c and d in abcd or abcde
         const cCDProduct = {
 
             name: "cCDProduct",
@@ -352,7 +412,7 @@ window.addEventListener("load", async() => {
             }
         };
 
-        // clue - is b greater than c in abcd
+        // clue - is b greater than c in abcd or abcde
         const cBGreaterC = {
 
             name: "cBGreaterC",
@@ -387,7 +447,7 @@ window.addEventListener("load", async() => {
             }
         };
 
-        // clue - is a greater than b in abcd
+        // clue - is a greater than b in abcd or abcde
         const cAGreaterB = {
 
             name: "cAGreaterB",
@@ -482,17 +542,8 @@ window.addEventListener("load", async() => {
             name: "factorOf7",
 
             getValue: digits => {
-                let number = 0;
-                for (let i = 0; i < 4; i++) {
-                    partialSum = digits[i]*10**(3-i);
-                    number += partialSum;
-                }
-                let result = false;
-                if (number % 7 === 0) {
-                    result = true;
-                } 
-
-            return result;
+                const number = Number(digits.join(""));
+                return number % 7 === 0;
             },
 
             getText: value => {
@@ -521,17 +572,8 @@ window.addEventListener("load", async() => {
             name: "factorOf3",
 
             getValue: digits => {
-                let number = 0;
-                for (let i = 0; i < 4; i++) {
-                    partialSum = digits[i]*10**(3-i);
-                    number += partialSum;
-                }
-                let result = false;
-                if (number % 3 === 0) {
-                    result = true;
-                } 
-
-            return result;
+                const number = Number(digits.join(""));
+                return number % 3 === 0;
             },
 
             getText: value => {
@@ -610,21 +652,51 @@ window.addEventListener("load", async() => {
         // loop to find valid puzzle with unique solution set
 
         let selectedClues = [];
-        let candidateCache = new Map();
-        
+                
         while (true) {
 
             // reset clues and solution set for each iteration
             let availableClues = [...clueLog];
             selectedClues = [];
+            let candidateCache = new Map();
 
-            // pick the initial clues (number of clues = digitNum)
-            for (let i = 0; i < digitNum; i++) {
-                selectedClues[i] = availableClues.splice(Math.floor(Math.random() * availableClues.length),1)[0];
+            // pick the clue that produces the smallest candidate set
+            const firstClue = findSmallestClue(
+                availableClues,
+                digits,
+                candidateCache
+            );
+
+            availableClues.splice(availableClues.indexOf(firstClue), 1);
+
+            selectedClues.push(firstClue);
+
+            solutionSet = getSolutionSet(
+                selectedClues,
+                digits,
+                candidateCache
+            );
+
+            // greedily add the clue that reduces the solution set the most
+            while (solutionSet.length > 1 && availableClues.length > 0) {
+
+                const best = findBestClue(
+                    availableClues,
+                    solutionSet,
+                    digits,
+                    candidateCache
+                );
+
+                if (!best.clue) {
+                    break;
+                }
+
+                selectedClues.push(best.clue);
+
+                availableClues.splice(availableClues.indexOf(best.clue), 1);
+
+                solutionSet = best.solutionSet;
             }
-
-            // get initial solution set
-            solutionSet = getSolutionSet(selectedClues, digits, candidateCache);
 
             // no solution — try new clues
             if (solutionSet.length === 0) {
@@ -672,6 +744,8 @@ window.addEventListener("load", async() => {
         }
 
         // remove any clues that are not necessary by testing without them one by one
+        let candidateCache = new Map();
+
         let i = 0;
 
         while (i < selectedClues.length) {
@@ -685,7 +759,11 @@ window.addEventListener("load", async() => {
             const testClues = selectedClues.filter((_, index) => index !== i);
 
             // recalculate the solution set without this clue
-            const testSolutionSet = getSolutionSet(testClues, digits, candidateCache);
+            const testSolutionSet = getSolutionSet(
+                testClues,
+                digits,
+                candidateCache
+            );
 
             // if we still have a unique solution then this clue is redundant
             if (testSolutionSet.length === 1) {
