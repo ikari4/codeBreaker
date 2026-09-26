@@ -4,6 +4,8 @@ window.addEventListener("load", async() => {
 
     function getSolutionSet(clues, digits, candidateCache) {
         console.time("starting getSolutionSet");
+
+        // find solution set for any clue not in candidateCache and store all in clueSet
         const clueSet = clues.map(clue => {
             if (!candidateCache.has(clue.name)) {
                 candidateCache.set(
@@ -15,6 +17,7 @@ window.addEventListener("load", async() => {
         });
 
         console.timeEnd("starting getSolutionSet");
+        // return solution set common to all clues in clueSet
         return clueSet[0].filter(number => clueSet.every(array => array.includes(number))
         );
     }
@@ -697,6 +700,7 @@ window.addEventListener("load", async() => {
 
         let selectedClues = [];
         let candidateCache = new Map();
+        
         while (true) {
 
             // reset clues and solution set for each iteration
@@ -764,27 +768,28 @@ window.addEventListener("load", async() => {
         console.log(`The clues are: ${selectedClues.map(clue => clue.name).join(", ")}`);
         // 
 
-        // Remove any clues that are not necessary
+        // remove any clues that are not necessary by testing without them one by one
         let i = 0;
 
         while (i < selectedClues.length) {
 
-            // Don't remove the last clue
+            // don't remove the last clue
             if (selectedClues.length === 1) {
                 break;
             }
 
-            // Test all clues except the current one
+            // test all clues except the current one
             const testClues = selectedClues.filter((_, index) => index !== i);
-            // Recalculate the solution set without this clue
+
+            // recalculate the solution set without this clue
             console.log(`call getSolutionSet to test if clue is necessary: ${selectedClues[i].name}`);
             const testSolutionSet = getSolutionSet(testClues, digits, candidateCache);
-            // If we still have a unique solution,
-            // this clue is redundant
+
+            // if we still have a unique solution then this clue is redundant
             if (testSolutionSet.length === 1) {
                 selectedClues.splice(i, 1);
             } else {
-                // This clue is necessary
+                // this clue is necessary
                 i++;
             }
         }
@@ -797,8 +802,7 @@ window.addEventListener("load", async() => {
         messageDiv.textContent = "";
         cluesDiv.innerHTML = "";
 
-        // clues
-        
+        // display clues on the screen
         selectedClues.forEach(clue => {
             const clueElement = document.createElement("p");
             clueElement.innerHTML = clue.shortText(digits);
@@ -807,16 +811,15 @@ window.addEventListener("load", async() => {
     }
 
     // populate the page
-    // four guess boxes and a submit button
     const page = document.getElementById("page");
     const guessDiv = document.getElementById("guessDiv");
-    let digitNum = 5;
+    let digitNum = 4;
 
-    // Set up input boxes for the digits
     const digitDisplays = [];
     const digitButtons = [];
     const digitValues = [];
 
+    // set up input boxes for the digits dynamically per digitNum length
     for (let i = 0; i < digitNum; i++) {
         const digitBox = document.createElement("div");
         digitBox.classList.add("digitBox");
@@ -859,7 +862,7 @@ window.addEventListener("load", async() => {
             }, 120);
         });
 
-        // Store references to the displays and buttons
+        // store references to the displays and buttons
         digitDisplays.push(digitDisplay);
         digitButtons.push(upButton, downButton);
 
@@ -905,7 +908,7 @@ window.addEventListener("load", async() => {
 
         cluesDiv.innerHTML = `
             <div class="creatingPuzzle">
-                Creating new puzzle<span class="loadingDots"></span>
+                Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
             </div>
         `;
 
