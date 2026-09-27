@@ -115,9 +115,11 @@ body {
 
 #submitGuess,
 #fourDigitButton,
-#fiveDigitButton {
+#fiveDigitButton,
+#sixDigitButton {
     margin-left: 12px;
     height: 55px;
+    width: 116px;
 
     background: #001a00;
     color: #33ff33;
