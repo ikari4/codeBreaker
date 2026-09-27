@@ -182,7 +182,7 @@ window.addEventListener("load", async() => {
             digits[i] = num;
         }
         //
-        console.log(`The number is ${digits.join("")}`);
+        // console.log(`The number is ${digits.join("")}`);
         //
         // create array of candidates
         let candidates = [];
@@ -715,8 +715,8 @@ window.addEventListener("load", async() => {
 
         submitGuess.style.display = "block";
         playAgainButton.style.display = "none";
-        messageDiv.textContent = `The number is ${digits.join("")}`;
-        // messageDiv.textContent = "";
+        // messageDiv.textContent = `The number is ${digits.join("")}`;
+        messageDiv.textContent = "";
         cluesDiv.innerHTML = "";
 
         // display clues on the screen
