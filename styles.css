@@ -115,9 +115,9 @@ body {
 
 #submitGuess,
 #fourDigitButton,
-#fiveDigitButton {
-/* #sixDigitButton,
-#sevenDigitButton { */
+#fiveDigitButton,
+#sixDigitButton,
+#sevenDigitButton {
     margin-left: 12px;
     height: 55px;
     width: 116px;

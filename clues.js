@@ -281,6 +281,41 @@ const cBGreaterC = {
     }
 };
 
+// clue - is last greater than next-to-last in abcd(ef)
+const cLGreaterN = {
+
+    name: "cLGreaterN",
+
+    getValue: (digits, digitNum) => {
+        let result = false;
+        if (digits[digits.length - 1] > digits[digits.length - 2]) {
+            result = true;
+        } 
+
+    return result;
+    },
+
+    getText: value => {
+        if (value === true) {
+                return `My last digit is greater<br>than its adjacent digit`;
+        } else {
+                return `My last digit is not greater<br>than its adjacent digit`
+        }
+    },
+
+    remainingCandidates: (value, candidates, digitNum, digits) => {
+        const candArray = candidates.filter(candidate => {
+            const candidateDigits = candidate.split('').map(Number);
+            if (candidateDigits[digits.length - 1] > candidateDigits[digits.length - 2] && value === true) {
+                return true;
+            } else if (candidateDigits[digits.length - 1] <= candidateDigits[digits.length - 2] && value === false) {
+                return true;
+            }
+            return false;});
+        return candArray;
+    }
+};
+
 // clue - is a greater than b in abcd(ef)
 const cAGreaterB = {
 
@@ -400,6 +435,36 @@ const factorOf7 = {
     }
 };
 
+// clue - is 5 a factor of the number
+const factorOf5 = {
+
+    name: "factorOf5",
+
+    getValue: (digits, digitNum) => {
+        const number = Number(digits.join(""));
+        return number % 5 === 0;
+    },
+
+    getText: value => {
+        if (value === true) {
+                return `I am a multiple of 5`;
+        } else {
+                return `I am not a multiple of 5`
+        }
+    },
+
+    remainingCandidates: (value, candidates, digitNum, digits) => {
+        const candArray = candidates.filter(candidate => {
+            if (candidate % 5 === 0 && value === true) {
+                return true;
+            } else if (candidate % 5 !== 0 && value === false) {
+                return true;
+            }
+            return false;});
+        return candArray;
+    }
+};
+
 // clue - is 3 a factor of the number
 const factorOf3 = {
 
@@ -430,74 +495,6 @@ const factorOf3 = {
     }
 };
 
-// clue - is last digit even
-const cLastEven = {
-
-    name: "cLastEven",
-
-    getValue: (digits, digitNum) => {
-        let result = false;
-        if (digits[digitNum - 1] % 2 === 0) {
-            result = true;
-        } 
-
-    return result;
-    },
-
-    getText: value => {
-        if (value === true) {
-                return `My last digit is even`;
-        } else {
-                return `My last digit is odd`;
-        }
-    },
-
-    remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            if (candidate[digitNum - 1] % 2 === 0 && value === true) {
-                return true;
-            } else if (candidate[digitNum - 1] % 2 === 1 && value === false) {
-                return true;
-            }
-            return false;});
-        return candArray;
-    }
-};
-
-// clue - is first digit even
-const cFirstEven = {
-
-    name: "cFirstEven",
-
-    getValue: (digits, digitNum) => {
-        let result = false;
-        if (digits[0] % 2 === 0) {
-            result = true;
-        } 
-
-    return result;
-    },
-
-    getText: value => {
-        if (value === true) {
-                return `My first digit is even`;
-        } else {
-                return `My first digit is odd`;
-        }
-    },
-
-    remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            if (candidate[0] % 2 === 0 && value === true) {
-                return true;
-            } else if (candidate[0] % 2 === 1 && value === false) {
-                return true;
-            }
-            return false;});
-        return candArray;
-    }
-};
-
 // clue log
 const clueLog = [
     cDigitProduct,
@@ -507,13 +504,13 @@ const clueLog = [
     cACProduct,
     cCDProduct,
     cBGreaterC,
+    cLGreaterN,
     cAGreaterB,
     cMaxDigit,
     cMinDigit,
     factorOf7,
+    factorOf5,
     factorOf3,
-    cLastEven,
-    cFirstEven,
     cFirstThreeProduct,
     cLastThreeProduct,
     cLastThreeSum,

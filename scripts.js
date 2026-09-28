@@ -403,6 +403,8 @@ window.addEventListener("load", async() => {
             <p>Choose code length to break</p>
             <button id="fourDigitButton">4 Digits</button>
             <button id="fiveDigitButton">5 Digits</button>
+            <button id="sixDigitButton">6 Digits</button>
+            <button id="sevenDigitButton">7 Digits</button>
         </div>
     `;
             // button html literal code to be insterted above for 6 and 7 digit puzzles
@@ -420,15 +422,15 @@ window.addEventListener("load", async() => {
     });
 
     // EventListeners for 6 and 7 digit puzzles
-    // document.getElementById("sixDigitButton").addEventListener("click", () => {
-    //     digitNum = 6;
-    //     startGame();
-    // });
+    document.getElementById("sixDigitButton").addEventListener("click", () => {
+        digitNum = 6;
+        startGame();
+    });
     
-    // document.getElementById("sevenDigitButton").addEventListener("click", () => {
-    //     digitNum = 7;
-    //     startGame();
-    // });
+    document.getElementById("sevenDigitButton").addEventListener("click", () => {
+        digitNum = 7;
+        startGame();
+    });
 
     const cluesDiv = document.getElementById("cluesDiv");
     const messageDiv = document.getElementById("messageDiv");
