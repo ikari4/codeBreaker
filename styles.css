@@ -115,8 +115,9 @@ body {
 
 #submitGuess,
 #fourDigitButton,
-#fiveDigitButton,
-#sixDigitButton {
+#fiveDigitButton {
+/* #sixDigitButton,
+#sevenDigitButton { */
     margin-left: 12px;
     height: 55px;
     width: 116px;
@@ -190,11 +191,15 @@ p {
     animation: blink 1.2s infinite;
 }
 
-.dot:nth-child(2) {
+.dot:nth-of-type(1) {
+    animation-delay: 0s;
+}
+
+.dot:nth-of-type(2) {
     animation-delay: 0.2s;
 }
 
-.dot:nth-child(3) {
+.dot:nth-of-type(3) {
     animation-delay: 0.4s;
 }
 

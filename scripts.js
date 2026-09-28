@@ -182,7 +182,7 @@ window.addEventListener("load", async() => {
             digits[i] = num;
         }
         //
-        // console.log(`The number is ${digits.join("")}`);
+        console.log(`The number is ${digits.join("")}`);
         //
         // create array of candidates
         let candidates = [];
@@ -403,9 +403,11 @@ window.addEventListener("load", async() => {
             <p>Choose code length to break</p>
             <button id="fourDigitButton">4 Digits</button>
             <button id="fiveDigitButton">5 Digits</button>
-            <button id="sixDigitButton">6 Digits</button>
         </div>
     `;
+            // button html literal code to be insterted above for 6 and 7 digit puzzles
+            // <button id="sixDigitButton">6 Digits</button>
+            // <button id="sevenDigitButton">7 Digits</button>
 
     document.getElementById("fourDigitButton").addEventListener("click", () => {
         digitNum = 4;
@@ -417,11 +419,17 @@ window.addEventListener("load", async() => {
         startGame();
     });
 
-    document.getElementById("sixDigitButton").addEventListener("click", () => {
-        digitNum = 6;
-        startGame();
-    });
+    // EventListeners for 6 and 7 digit puzzles
+    // document.getElementById("sixDigitButton").addEventListener("click", () => {
+    //     digitNum = 6;
+    //     startGame();
+    // });
     
+    // document.getElementById("sevenDigitButton").addEventListener("click", () => {
+    //     digitNum = 7;
+    //     startGame();
+    // });
+
     const cluesDiv = document.getElementById("cluesDiv");
     const messageDiv = document.getElementById("messageDiv");
     const playAgainButton = document.getElementById("playAgainButton");
@@ -446,7 +454,6 @@ window.addEventListener("load", async() => {
             button.disabled = false;
         });
 
-        submitGuess.style.display = "block";
         playAgainButton.style.display = "none";
 
         // give the browser time to display the loading message

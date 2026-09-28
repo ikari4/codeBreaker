@@ -172,6 +172,31 @@ const cFirstThreeProduct = {
 };
 
 // clue - product of last three digits in abcd(ef)
+const cFirstThreeSum = {
+
+    name: "cFirstThreeSum",
+
+    getValue: (digits, digitNum) => {
+        const sum = digits[0] + digits[1] + digits[2];
+        return sum;
+    },
+
+    getText: value =>
+        `The sum of my first<br>three digits is ${value}`,
+
+    remainingCandidates: (value, candidates, digitNum, digits) => {
+        const candArray = candidates.filter(candidate => {
+            const candidateDigits = candidate.split('').map(Number);
+            if (candidateDigits[0] + candidateDigits[1] + candidateDigits[2] === value) {
+                return true;
+            }
+            return false;
+        });
+        return candArray;
+    }
+};
+
+// clue - product of last three digits in abcd(ef)
 const cLastThreeProduct = {
 
     name: "cLastThreeProduct",
@@ -188,6 +213,31 @@ const cLastThreeProduct = {
         const candArray = candidates.filter(candidate => {
             const candidateDigits = candidate.split('').map(Number);
             if (candidateDigits[digits.length - 3] * candidateDigits[digits.length - 2] * candidateDigits[digits.length - 1] === value) {
+                return true;
+            }
+            return false;
+        });
+        return candArray;
+    }
+};
+
+// clue - product of last three digits in abcd(ef)
+const cLastThreeSum = {
+
+    name: "cLastThreeSum",
+
+    getValue: (digits, digitNum) => {
+        const sum = digits[digits.length - 3] + digits[digits.length - 2] + digits[digits.length - 1];
+        return sum;
+    },
+
+    getText: value =>
+        `The sum of my last<br>three digits is ${value}`,
+
+    remainingCandidates: (value, candidates, digitNum, digits) => {
+        const candArray = candidates.filter(candidate => {
+            const candidateDigits = candidate.split('').map(Number);
+            if (candidateDigits[digits.length - 3] + candidateDigits[digits.length - 2] + candidateDigits[digits.length - 1] === value) {
                 return true;
             }
             return false;
@@ -414,6 +464,40 @@ const cLastEven = {
     }
 };
 
+// clue - is first digit even
+const cFirstEven = {
+
+    name: "cFirstEven",
+
+    getValue: (digits, digitNum) => {
+        let result = false;
+        if (digits[0] % 2 === 0) {
+            result = true;
+        } 
+
+    return result;
+    },
+
+    getText: value => {
+        if (value === true) {
+                return `My first digit is even`;
+        } else {
+                return `My first digit is odd`;
+        }
+    },
+
+    remainingCandidates: (value, candidates, digitNum, digits) => {
+        const candArray = candidates.filter(candidate => {
+            if (candidate[0] % 2 === 0 && value === true) {
+                return true;
+            } else if (candidate[0] % 2 === 1 && value === false) {
+                return true;
+            }
+            return false;});
+        return candArray;
+    }
+};
+
 // clue log
 const clueLog = [
     cDigitProduct,
@@ -429,6 +513,9 @@ const clueLog = [
     factorOf7,
     factorOf3,
     cLastEven,
+    cFirstEven,
     cFirstThreeProduct,
-    cLastThreeProduct
+    cLastThreeProduct,
+    cLastThreeSum,
+    cFirstThreeSum
 ]
