@@ -208,45 +208,46 @@ window.addEventListener("load", async() => {
         // create cache of solution sets for all clues given puzzle digits
         let candidateCache = new Map();
         clueLog.forEach (clue => {
-            candidateCache.set(clue.name, new Set(clue.remainingCandidates(
-                clue.getValue(digits, digitNum), 
-                candidates, 
-                digitNum,
-                digits)));
+            candidateCache.set(
+                clue.name, 
+                clue.remainingCandidates(
+                    clue.getValue(digits, digitNum), 
+                    candidates, 
+                    digitNum,
+                    digits
+                ));
         });
-                
-        while (true) {
-            // reset clues and solution set for each iteration
-            let availableClues = [...clueLog];
-            selectedClues = [];
+           
+        // reset clues and solution set for each iteration
+        let availableClues = [...clueLog];
+        selectedClues = [];
 
-            // pick the clue that produces the smallest candidate set
-            const firstClue = findBestFirstClue(availableClues, candidateCache);
+        // pick the clue that produces the smallest candidate set
+        const firstClue = findBestFirstClue(availableClues, candidateCache);
 
-            availableClues.splice(availableClues.indexOf(firstClue), 1);
+        availableClues.splice(availableClues.indexOf(firstClue), 1);
 
-            selectedClues.push(firstClue);
+        selectedClues.push(firstClue);
 
-            solutionSet = getSolutionSet(selectedClues, candidateCache);
+        solutionSet = getSolutionSet(selectedClues, candidateCache);
 
-            // greedily add the clue that reduces the solution set the most
-            while (solutionSet.length > 1 && availableClues.length > 0) {
+        // greedily add the clue that reduces the solution set the most
+        while (solutionSet.length > 1 && availableClues.length > 0) {
 
-                const best = findBestNextClue(availableClues, solutionSet, candidateCache);
+            const best = findBestNextClue(availableClues, solutionSet, candidateCache);
 
-                if (!best.clue) {
-                    break;
-                }
-
-                selectedClues.push(best.clue);
-
-                availableClues.splice(availableClues.indexOf(best.clue), 1);
-
-                solutionSet = best.solutionSet;
+            if (!best.clue) {
+                break;
             }
 
+            selectedClues.push(best.clue);
+
+            availableClues.splice(availableClues.indexOf(best.clue), 1);
+
+            solutionSet = best.solutionSet;
+
             // no solution — try new clues
-            if (solutionSet.length === 0) {
+            if (solutionSet.length === 0 || availableClues.length === 0) {
                 continue;
             }
 
@@ -254,7 +255,7 @@ window.addEventListener("load", async() => {
             if (solutionSet.length === 1) {
                 break;
             }
-          }
+        }
 
         // remove any clues that are not necessary by testing without them one by one
         let i = 0;
@@ -290,12 +291,12 @@ window.addEventListener("load", async() => {
         // display clues on the screen
         selectedClues.forEach(clue => {
             const clueElement = document.createElement("p");
-            clueElement.innerHTML = clue.getText(clue.getValue(digits));
+            clueElement.innerHTML = clue.getText(clue.getValue(digits, digitNum), digitNum);
             cluesDiv.appendChild(clueElement);
         });
     }
 
-    function startGame() {
+    function startGame(digitNum) {
         guessDiv.innerHTML = "";
 
         // reset the digit-control arrays
@@ -395,6 +396,9 @@ window.addEventListener("load", async() => {
     // populate the page
     const page = document.getElementById("page");
     const guessDiv = document.getElementById("guessDiv");
+    const cluesDiv = document.getElementById("cluesDiv");
+    const messageDiv = document.getElementById("messageDiv");
+    const playAgainButton = document.getElementById("playAgainButton");
     let digitNum;
     
     // user choice of four or five or six digit game
@@ -418,7 +422,7 @@ window.addEventListener("load", async() => {
         // give the browser time to display the loading message
         await new Promise(resolve => setTimeout(resolve, 50));
 
-        startGame();
+        startGame(digitNum);
     });
 
     document.getElementById("fiveDigitButton").addEventListener("click", async () => {
@@ -432,7 +436,7 @@ window.addEventListener("load", async() => {
         // give the browser time to display the loading message
         await new Promise(resolve => setTimeout(resolve, 50));
 
-        startGame();
+        startGame(digitNum);
     });
 
     document.getElementById("sixDigitButton").addEventListener("click", async () => {
@@ -446,13 +450,9 @@ window.addEventListener("load", async() => {
         // give the browser time to display the loading message
         await new Promise(resolve => setTimeout(resolve, 50));
 
-        startGame();
+        startGame(digitNum);
     });
     
-    const cluesDiv = document.getElementById("cluesDiv");
-    const messageDiv = document.getElementById("messageDiv");
-    const playAgainButton = document.getElementById("playAgainButton");
-
     playAgainButton.addEventListener("click", async () => {
         await playAgainSound();
         cluesDiv.innerHTML = `

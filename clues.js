@@ -10,14 +10,15 @@ const cDigitProduct = {
         `The product of<br>my digits is ${value}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            const product = candidateDigits.reduce((product, digit) => product * digit, 1);
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            const product = digs.reduce((product, digit) => product * digit, 1);
             if (product === value) {
-                return true;
+                candSet.add(candidate);
             }
-            return false;});
-        return candArray;
+        });
+        return candSet;
     }
 };
 
@@ -33,14 +34,15 @@ const cDigitSum = {
         `The sum of my<br>digits is ${value}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            const sum = candidateDigits.reduce((sum, digit) => sum + digit, 0);
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            const sum = digs.reduce((sum, digit) => sum + digit, 0);
             if (sum === value) {
-                return true;
+                candSet.add(candidate);
             }
-            return false;});
-        return candArray;
+        });
+        return candSet;
     }
 };
 
@@ -58,15 +60,14 @@ const cADSum = {
         `My first and fourth<br>digits sum to ${value}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            const sum = candidateDigits[0] + candidateDigits[3];
-            if (sum === value) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[0] + digs[3] === value) {
+                candSet.add(candidate);
             }
-            return false;
         });
-        return candArray;
+        return candSet;
     }
 };
 
@@ -84,15 +85,14 @@ const cBDSum = {
         `My second and fourth<br>digits sum to ${value}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            const sum = candidateDigits[1] + candidateDigits[3];
-            if (sum === value) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[1] + digs[3] === value) {
+                candSet.add(candidate);
             }
-            return false;
         });
-        return candArray;
+        return candSet;
     }
 };
 
@@ -110,14 +110,14 @@ const cACProduct = {
         `The product of my first<br>and third digits is ${value}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            if (candidateDigits[0] * candidateDigits[2] === value) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[0] * digs[2] === value) {
+                candSet.add(candidate);
             }
-            return false;
         });
-        return candArray;
+        return candSet;
     }
 };
 
@@ -135,14 +135,14 @@ const cCDProduct = {
         `The product of my third<br>and fourth digits is ${value}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            if (candidateDigits[2] * candidateDigits[3] === value) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[2] * digs[3] === value) {
+                candSet.add(candidate);
             }
-            return false;
         });
-        return candArray;
+        return candSet;
     }
 };
 
@@ -160,14 +160,14 @@ const cFirstThreeProduct = {
         `The product of my first<br>three digits is ${value}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            if (candidateDigits[0] * candidateDigits[1] * candidateDigits[2] === value) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[0] * digs[1] * digs[2] === value) {
+                candSet.add(candidate);
             }
-            return false;
         });
-        return candArray;
+        return candSet;
     }
 };
 
@@ -185,14 +185,14 @@ const cFirstThreeSum = {
         `The sum of my first<br>three digits is ${value}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            if (candidateDigits[0] + candidateDigits[1] + candidateDigits[2] === value) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[0] + digs[1] + digs[2] === value) {
+                candSet.add(candidate);
             }
-            return false;
         });
-        return candArray;
+        return candSet;
     }
 };
 
@@ -210,14 +210,14 @@ const cLastThreeProduct = {
         `The product of my last<br>three digits is ${value}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            if (candidateDigits[digits.length - 3] * candidateDigits[digits.length - 2] * candidateDigits[digits.length - 1] === value) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[digs.length - 3] * digs[digs.length - 2] * digs[digs.length - 1] === value) {
+                candSet.add(candidate);
             }
-            return false;
         });
-        return candArray;
+        return candSet;
     }
 };
 
@@ -235,14 +235,14 @@ const cLastThreeSum = {
         `The sum of my last<br>three digits is ${value}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            if (candidateDigits[digits.length - 3] + candidateDigits[digits.length - 2] + candidateDigits[digits.length - 1] === value) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[digs.length - 3] + digs[digs.length - 2] + digs[digs.length - 1] === value) {
+                candSet.add(candidate);
             }
-            return false;
         });
-        return candArray;
+        return candSet;
     }
 };
 
@@ -269,15 +269,16 @@ const cBGreaterC = {
     },
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            if (candidateDigits[1] > candidateDigits[2] && value === true) {
-                return true;
-            } else if (candidateDigits[1] <= candidateDigits[2] && value === false) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[1] > digs[2] && value === true) {
+                candSet.add(candidate);
+            } else if (digs[1] <= digs[2] && value === false) {
+                candSet.add(candidate);
             }
-            return false;});
-        return candArray;
+        });
+        return candSet;
     }
 };
 
@@ -304,15 +305,16 @@ const cLGreaterN = {
     },
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            if (candidateDigits[digits.length - 1] > candidateDigits[digits.length - 2] && value === true) {
-                return true;
-            } else if (candidateDigits[digits.length - 1] <= candidateDigits[digits.length - 2] && value === false) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[digs.length - 1] > digs[digs.length - 2] && value === true) {
+                candSet.add(candidate);
+            } else if (digs[digs.length - 1] <= digs[digs.length - 2] && value === false) {
+                candSet.add(candidate);
             }
-            return false;});
-        return candArray;
+        });
+        return candSet;
     }
 };
 
@@ -339,15 +341,16 @@ const cAGreaterB = {
     },
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
-            if (candidateDigits[0] > candidateDigits[1] && value === true) {
-                return true;
-            } else if (candidateDigits[0] <= candidateDigits[1] && value === false) {
-                return true;
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            if (digs[0] > digs[1] && value === true) {
+                candSet.add(candidate);
+            } else if (digs[0] <= digs[1] && value === false) {
+                candSet.add(candidate);
             }
-            return false;});
-        return candArray;
+        });
+        return candSet;
     }
 };
 
@@ -366,15 +369,17 @@ const cMaxDigit = {
         `None of my digits are<br>greater than digit ${value + 1}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            const referenceValue = digs[value];
+            const maxVal = Math.max(...digs);
 
-            const referenceValue = candidateDigits[value];
-            const maxVal = Math.max(...candidateDigits);
-
-            return referenceValue === maxVal;
+            if (referenceValue === maxVal) {
+                candSet.add(candidate);
+            }
         });
-        return candArray;
+        return candSet;
     }
 };
 
@@ -393,15 +398,18 @@ const cMinDigit = {
         `None of my digits are<br>less than digit ${value + 1}`,
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
-            const candidateDigits = candidate.split('').map(Number);
+        
+        const candSet = new Set();
+        candidates.forEach(candidate => {
+            const digs = [...candidate].map(Number);
+            const referenceValue = digs[value];
+            const minVal = Math.min(...digs);
 
-            const referenceValue = candidateDigits[value];
-            const minVal = Math.min(...candidateDigits);
-
-            return referenceValue === minVal;
+            if (referenceValue === minVal) {
+                candSet.add(candidate);
+            }
         });
-        return candArray;
+        return candSet;
     }
 };
 
@@ -424,14 +432,15 @@ const factorOf7 = {
     },
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
+        const candSet = new Set();
+        candidates.forEach(candidate => {        
             if (candidate % 7 === 0 && value === true) {
-                return true;
+                candSet.add(candidate);
             } else if (candidate % 7 !== 0 && value === false) {
-                return true;
+                candSet.add(candidate);
             }
-            return false;});
-        return candArray;
+        });
+        return candSet;
     }
 };
 
@@ -454,14 +463,15 @@ const factorOf5 = {
     },
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
+        const candSet = new Set();
+        candidates.forEach(candidate => {
             if (candidate % 5 === 0 && value === true) {
-                return true;
+                candSet.add(candidate);
             } else if (candidate % 5 !== 0 && value === false) {
-                return true;
+                candSet.add(candidate);
             }
-            return false;});
-        return candArray;
+        });
+        return candSet;
     }
 };
 
@@ -484,16 +494,63 @@ const factorOf3 = {
     },
 
     remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candArray = candidates.filter(candidate => {
+        const candSet = new Set();
+        candidates.forEach(candidate => {
             if (candidate % 3 === 0 && value === true) {
-                return true;
+                candSet.add(candidate);
             } else if (candidate % 3 !== 0 && value === false) {
-                return true;
+                candSet.add(candidate);
             }
-            return false;});
-        return candArray;
+        });
+        return candSet;
     }
 };
+
+const cMiddleProduct = {
+
+  name: "cMiddleProduct",
+
+  getValue: (digits, digitNum) => {
+    let product = 1;
+    // produces product of middle three digits of odd digitNums or middle two of even
+    for (let i = Math.trunc((digitNum - 2) / 2); i <= Math.trunc((digitNum + 1) / 2); i++) {
+      product *= digits[i];
+    }
+      return product;
+  },
+
+  getText: (value, digitNum) => {
+    if (digitNum % 2 === 0) {
+      return `The product of my middle<br>two digits is ${value}`
+    } else {
+      return `The product of my middle<br>three digits is ${value}`
+    }
+
+  },
+
+  remainingCandidates: (value, candidates, digitNum, digits) => {
+    const candSet = new Set();
+    candidates.forEach(candidate => {
+
+        let product = 1;
+        const digs = [...candidate].map(Number);
+        // produces product of middle three digits of odd digitNums or middle two of even
+        for (let i = Math.trunc((digitNum - 2) / 2); 
+                i <= Math.trunc((digitNum + 1) / 2); 
+                i++) {
+            product *= digs[i];
+        }
+
+        if (product === value) {
+            candSet.add(candidate);
+        }
+      
+    });
+
+    return candSet;
+  }
+};
+
 
 // clue log
 const clueLog = [
@@ -514,5 +571,6 @@ const clueLog = [
     cFirstThreeProduct,
     cLastThreeProduct,
     cLastThreeSum,
-    cFirstThreeSum
-]
+    cFirstThreeSum,
+    cMiddleProduct
+];
