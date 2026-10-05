@@ -118,7 +118,9 @@ body {
 #fiveDigitButton,
 #sixDigitButton,
 #sevenDigitButton,
-#submitGuessButton,#revealCodeButton,
+#resetButton,
+#submitGuessButton,
+#revealCodeButton,
 #playAgainButton {
     margin-left: 12px;
     height: 55px;

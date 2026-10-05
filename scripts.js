@@ -499,6 +499,9 @@ window.addEventListener("load", async() => {
     }
 
     async function setupChallenge() {
+        
+        const challengeStart = Date.now();
+
         for (let i = 4; i <= 6; i++) {
             cluesDiv.innerHTML = `
                 <div class="creatingPuzzle">
@@ -511,7 +514,15 @@ window.addEventListener("load", async() => {
 
             await setupPage("challenge", i);
         }
-        messageDiv.innerHTML = "Correct!<br>You've cracked it!<br>Challenge Complete!";
+
+        const challengeTime = (Date.now() - challengeStart) / 1000;
+        messageDiv.innerHTML = "Challenge Complete!";
+        messageDiv.innerHTML += `<br>Time: ${challengeTime} seconds`;
+        resetButton.style.display = "block";
+
+        document.getElementById("resetButton").addEventListener("click", async () => {
+            window.location.reload();
+        });
     } 
 
     // main script starts here
@@ -523,6 +534,7 @@ window.addEventListener("load", async() => {
     const playAgainButton = document.getElementById("playAgainButton");
     const submitGuessButton = document.getElementById("submitGuessButton");
     const revealCodeButton = document.getElementById("revealCodeButton");
+    const resetButton = document.getElementById("resetButton");
     let mode = "challenge";
 
     if (mode === "practice") {
@@ -539,7 +551,7 @@ window.addEventListener("load", async() => {
         setTimeout(() => {
             splash.style.display = "none";
             page.style.display = "block";
-        }, 500);
-    }, 3000);
+        }, 100);
+    }, 600);
 
 });
