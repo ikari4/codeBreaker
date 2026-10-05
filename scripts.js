@@ -174,7 +174,7 @@ window.addEventListener("load", async() => {
         };
     }
 
-    function makePuzzle(digitNum) {
+    function makePuzzle(mode,digitNum) {
         // randomly select the digits for the puzzle
         let digits = [];
         for (let i = 0; i < digitNum; i++) {
@@ -283,7 +283,11 @@ window.addEventListener("load", async() => {
         }
 
         submitGuessButton.style.display = "block";
-        revealCodeButton.style.display = "block";
+
+        if (mode === "practice") {
+            revealCodeButton.style.display = "block";
+        }
+
         playAgainButton.style.display = "none";
         // messageDiv.textContent = `The number is ${digits.join("")}`;
         messageDiv.textContent = "";
@@ -297,7 +301,10 @@ window.addEventListener("load", async() => {
         });
     }
 
-    function setupPage(digitNum) {
+    async function setupPage(mode, digitNum) {
+        // promise set to return to challenge loop in challenge mode
+        return new Promise(resolve => {
+        
         guessDiv.innerHTML = "";
 
         // reset the digit-control arrays
@@ -357,7 +364,10 @@ window.addEventListener("load", async() => {
         }
 
         submitGuessButton.style.display = "block";
-        revealCodeButton.style.display = "block";
+        
+        if (mode === "practice") {
+            revealCodeButton.style.display = "block";
+        }
 
         submitGuessButton.addEventListener("click", async () => {
 
@@ -377,7 +387,13 @@ window.addEventListener("load", async() => {
                     button.disabled = true;
                 });
 
-                playAgainButton.style.display = "block";
+                // skip play again button if in challenge mode
+                if (mode === "practice") {
+                    playAgainButton.style.display = "block";
+                }
+
+                // resolve the promise to continue in challenge mode
+                resolve();
 
             } else {
                 await playIncorrectSound();
@@ -386,6 +402,7 @@ window.addEventListener("load", async() => {
                 messageDiv.style.color = "#ff4444";
             }
         });
+
         
         revealCodeButton.addEventListener("click", async () => {
             messageDiv.innerHTML = `The code is: ${solutionSet[0]}`;
@@ -396,10 +413,12 @@ window.addEventListener("load", async() => {
             playAgainButton.style.display = "block";
         });
 
-        makePuzzle(digitNum);
+        makePuzzle(mode, digitNum);
+    
+    });
     }
 
-    function pickDigitNum() {
+    function setupPractice() {
         // user choice of four or five or six digit game
 
         let digitNum;
@@ -423,7 +442,7 @@ window.addEventListener("load", async() => {
             // give the browser time to display the loading message
             await new Promise(resolve => setTimeout(resolve, 50));
 
-            setupPage(digitNum);
+            setupPage("practice", digitNum);
         });
 
         document.getElementById("fiveDigitButton").addEventListener("click", async () => {
@@ -437,7 +456,7 @@ window.addEventListener("load", async() => {
             // give the browser time to display the loading message
             await new Promise(resolve => setTimeout(resolve, 50));
 
-            setupPage(digitNum);
+            setupPage("practice", digitNum);
         });
 
         document.getElementById("sixDigitButton").addEventListener("click", async () => {
@@ -451,7 +470,7 @@ window.addEventListener("load", async() => {
             // give the browser time to display the loading message
             await new Promise(resolve => setTimeout(resolve, 50));
 
-            setupPage(digitNum);
+            setupPage("practice", digitNum);
         });
         
         playAgainButton.addEventListener("click", async () => {
@@ -475,9 +494,25 @@ window.addEventListener("load", async() => {
             // give the browser time to display the loading message
             await new Promise(resolve => setTimeout(resolve, 50));
 
-            pickDigitNum();
+            setupPractice();
         });
     }
+
+    async function setupChallenge() {
+        for (let i = 4; i <= 6; i++) {
+            cluesDiv.innerHTML = `
+                <div class="creatingPuzzle">
+                    Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+                </div>
+            `;
+
+            // give the browser time to display the loading message
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            await setupPage("challenge", i);
+        }
+        messageDiv.innerHTML = "Correct!<br>You've cracked it!<br>Challenge Complete!";
+    } 
 
     // main script starts here
     // populate the page
@@ -488,10 +523,12 @@ window.addEventListener("load", async() => {
     const playAgainButton = document.getElementById("playAgainButton");
     const submitGuessButton = document.getElementById("submitGuessButton");
     const revealCodeButton = document.getElementById("revealCodeButton");
-    let mode = "practice";
+    let mode = "challenge";
 
     if (mode === "practice") {
-        pickDigitNum();
+        setupPractice();
+    } else {
+        setupChallenge();
     }
 
     // splash screen fadeaway
