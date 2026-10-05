@@ -174,7 +174,7 @@ window.addEventListener("load", async() => {
         };
     }
 
-    function newGame() {
+    function makePuzzle(digitNum) {
         // randomly select the digits for the puzzle
         let digits = [];
         for (let i = 0; i < digitNum; i++) {
@@ -217,7 +217,7 @@ window.addEventListener("load", async() => {
                     digits
                 ));
         });
-           
+
         // reset clues and solution set for each iteration
         let availableClues = [...clueLog];
         selectedClues = [];
@@ -282,7 +282,8 @@ window.addEventListener("load", async() => {
             }
         }
 
-        submitGuess.style.display = "block";
+        submitGuessButton.style.display = "block";
+        revealCodeButton.style.display = "block";
         playAgainButton.style.display = "none";
         // messageDiv.textContent = `The number is ${digits.join("")}`;
         messageDiv.textContent = "";
@@ -296,7 +297,7 @@ window.addEventListener("load", async() => {
         });
     }
 
-    function startGame(digitNum) {
+    function setupPage(digitNum) {
         guessDiv.innerHTML = "";
 
         // reset the digit-control arrays
@@ -355,12 +356,10 @@ window.addEventListener("load", async() => {
             guessDiv.append(digitBox);
         }
 
-        const buttonDiv = document.getElementById("buttonDiv");
-        const submitGuess = document.createElement("button");
-        submitGuess.id = "submitGuess";
-        submitGuess.textContent = "SUBMIT";
+        submitGuessButton.style.display = "block";
+        revealCodeButton.style.display = "block";
 
-        submitGuess.addEventListener("click", async () => {
+        submitGuessButton.addEventListener("click", async () => {
 
             const guess = digitValues.join("");
 
@@ -370,7 +369,8 @@ window.addEventListener("load", async() => {
                 messageDiv.innerHTML = "Correct!<br>You've cracked it!";
                 messageDiv.style.color = "#22cc44";
 
-                submitGuess.style.display = "none";
+                submitGuessButton.style.display = "none";
+                revealCodeButton.style.display = "none";
 
                 // disable all up/down buttons
                 digitButtons.forEach(button => {
@@ -386,10 +386,97 @@ window.addEventListener("load", async() => {
                 messageDiv.style.color = "#ff4444";
             }
         });
+        
+        revealCodeButton.addEventListener("click", async () => {
+            messageDiv.innerHTML = `The code is: ${solutionSet[0]}`;
+            messageDiv.style.color = "#33ff33";
 
-        buttonDiv.appendChild(submitGuess);
+            submitGuessButton.style.display = "none";
+            revealCodeButton.style.display = "none";
+            playAgainButton.style.display = "block";
+        });
 
-        newGame();
+        makePuzzle(digitNum);
+    }
+
+    function pickDigitNum() {
+        // user choice of four or five or six digit game
+
+        let digitNum;
+        guessDiv.innerHTML = `
+            <div class="gameChoice">
+                <p>Choose code length to break:</p>
+                <button id="fourDigitButton">4 Digits</button>
+                <button id="fiveDigitButton">5 Digits</button>
+                <button id="sixDigitButton">6 Digits</button>
+            </div>
+        `;
+
+        document.getElementById("fourDigitButton").addEventListener("click", async () => {
+            digitNum = 4;
+            cluesDiv.innerHTML = `
+                <div class="creatingPuzzle">
+                    Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+                </div>
+            `;
+
+            // give the browser time to display the loading message
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            setupPage(digitNum);
+        });
+
+        document.getElementById("fiveDigitButton").addEventListener("click", async () => {
+            digitNum = 5;
+            cluesDiv.innerHTML = `
+                <div class="creatingPuzzle">
+                    Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+                </div>
+            `;
+
+            // give the browser time to display the loading message
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            setupPage(digitNum);
+        });
+
+        document.getElementById("sixDigitButton").addEventListener("click", async () => {
+            digitNum = 6;
+            cluesDiv.innerHTML = `
+                <div class="creatingPuzzle">
+                    Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+                </div>
+            `;
+
+            // give the browser time to display the loading message
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            setupPage(digitNum);
+        });
+        
+        playAgainButton.addEventListener("click", async () => {
+            await playAgainSound();
+            cluesDiv.innerHTML = "";
+
+            messageDiv.innerHTML = "";
+
+            digitValues.fill(0);
+
+            digitDisplays.forEach(display => {
+                display.textContent = "0";
+            });
+
+            digitButtons.forEach(button => {
+                button.disabled = false;
+            });
+
+            playAgainButton.style.display = "none";
+
+            // give the browser time to display the loading message
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            pickDigitNum();
+        });
     }
 
     // main script starts here
@@ -399,87 +486,13 @@ window.addEventListener("load", async() => {
     const cluesDiv = document.getElementById("cluesDiv");
     const messageDiv = document.getElementById("messageDiv");
     const playAgainButton = document.getElementById("playAgainButton");
-    let digitNum;
-    
-    // user choice of four or five or six digit game
-    guessDiv.innerHTML = `
-        <div class="gameChoice">
-            <p>Choose code length to break:</p>
-            <button id="fourDigitButton">4 Digits</button>
-            <button id="fiveDigitButton">5 Digits</button>
-            <button id="sixDigitButton">6 Digits</button>
-        </div>
-    `;
+    const submitGuessButton = document.getElementById("submitGuessButton");
+    const revealCodeButton = document.getElementById("revealCodeButton");
+    let mode = "practice";
 
-    document.getElementById("fourDigitButton").addEventListener("click", async () => {
-        digitNum = 4;
-        cluesDiv.innerHTML = `
-            <div class="creatingPuzzle">
-                Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-            </div>
-        `;
-
-        // give the browser time to display the loading message
-        await new Promise(resolve => setTimeout(resolve, 50));
-
-        startGame(digitNum);
-    });
-
-    document.getElementById("fiveDigitButton").addEventListener("click", async () => {
-        digitNum = 5;
-        cluesDiv.innerHTML = `
-            <div class="creatingPuzzle">
-                Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-            </div>
-        `;
-
-        // give the browser time to display the loading message
-        await new Promise(resolve => setTimeout(resolve, 50));
-
-        startGame(digitNum);
-    });
-
-    document.getElementById("sixDigitButton").addEventListener("click", async () => {
-        digitNum = 6;
-        cluesDiv.innerHTML = `
-            <div class="creatingPuzzle">
-                Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-            </div>
-        `;
-
-        // give the browser time to display the loading message
-        await new Promise(resolve => setTimeout(resolve, 50));
-
-        startGame(digitNum);
-    });
-    
-    playAgainButton.addEventListener("click", async () => {
-        await playAgainSound();
-        cluesDiv.innerHTML = `
-            <div class="creatingPuzzle">
-                Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-            </div>
-        `;
-
-        messageDiv.innerHTML = "";
-
-        digitValues.fill(0);
-
-        digitDisplays.forEach(display => {
-            display.textContent = "0";
-        });
-
-        digitButtons.forEach(button => {
-            button.disabled = false;
-        });
-
-        playAgainButton.style.display = "none";
-
-        // give the browser time to display the loading message
-        await new Promise(resolve => setTimeout(resolve, 50));
-
-        newGame();
-    });
+    if (mode === "practice") {
+        pickDigitNum();
+    }
 
     // splash screen fadeaway
     setTimeout(() => {

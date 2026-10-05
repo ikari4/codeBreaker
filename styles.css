@@ -113,11 +113,13 @@ body {
     gap: 8px;
 }
 
-#submitGuess,
+
 #fourDigitButton,
 #fiveDigitButton,
 #sixDigitButton,
-#sevenDigitButton {
+#sevenDigitButton,
+#submitGuessButton,#revealCodeButton,
+#playAgainButton {
     margin-left: 12px;
     height: 55px;
     width: 116px;
@@ -154,7 +156,7 @@ p {
     font-size: 26px;
 }
 
-#playAgainButton {
+/* #playAgainButton {
     display: none;
     margin: 20px auto;
     padding: 10px 24px;
@@ -169,9 +171,9 @@ p {
     font-weight: bold;
 
     cursor: pointer;
-}
+} */
 
-#playAgainButton:hover {
+/* #playAgainButton:hover {
     background: #33ff33;
     color: #001a00;
     box-shadow: 0 0 8px #33ff33;
@@ -179,7 +181,7 @@ p {
 
 #playAgainButton:active {
     transform: translateY(1px);
-}
+} */
 
 .creatingPuzzle {
     text-align: center;
