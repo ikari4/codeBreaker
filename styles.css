@@ -118,10 +118,14 @@ body {
 #fiveDigitButton,
 #sixDigitButton,
 #sevenDigitButton,
-#resetButton,
+#resetFromChallengeButton,
+#resetFromPracticeButton,
 #submitGuessButton,
 #revealCodeButton,
-#playAgainButton {
+#playAgainButton,
+#practiceButton,
+#challengeButton,
+#howToPlayButton {
     margin-left: 12px;
     height: 55px;
     width: 116px;
@@ -152,38 +156,20 @@ p {
     margin: 10px;
 }
 
+#selectModeDiv {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 40px;
+}
+
 #messageDiv {
     text-align: center;
     margin-top: 20px;
     font-size: 26px;
 }
-
-/* #playAgainButton {
-    display: none;
-    margin: 20px auto;
-    padding: 10px 24px;
-
-    background: #001a00;
-    color: #33ff33;
-
-    border: 2px solid #33ff33;
-
-    font-family: "DejaVu Sans Mono", monospace;
-    font-size: 20px;
-    font-weight: bold;
-
-    cursor: pointer;
-} */
-
-/* #playAgainButton:hover {
-    background: #33ff33;
-    color: #001a00;
-    box-shadow: 0 0 8px #33ff33;
-}
-
-#playAgainButton:active {
-    transform: translateY(1px);
-} */
 
 .creatingPuzzle {
     text-align: center;

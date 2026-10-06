@@ -174,6 +174,34 @@ window.addEventListener("load", async() => {
         };
     }
 
+    function setMode() {
+        cluesDiv.innerHTML = "";
+        messageDiv.innerHTML = "";
+        resetFromChallengeButton.style.display = "none";
+        
+        // Set the game mode selection interface
+        guessDiv.innerHTML = `
+            <div class="gameChoice">
+                <p>Choose game mode:</p>
+                <button id="practiceButton">PRACTICE</button>
+                <button id="challengeButton">CHALLENGE</button>
+                <button id="howToPlayButton">HOW TO PLAY</button>
+            </div>
+        `;
+
+        document.getElementById("practiceButton").addEventListener("click", async () => {
+            setupPractice();
+        });
+
+        document.getElementById("challengeButton").addEventListener("click", async () => {
+            setupChallenge();
+        });
+        
+        document.getElementById("howToPlayButton").addEventListener("click", async () => {
+
+        });
+    }
+
     function makePuzzle(mode,digitNum) {
         // randomly select the digits for the puzzle
         let digits = [];
@@ -428,6 +456,7 @@ window.addEventListener("load", async() => {
                 <button id="fourDigitButton">4 Digits</button>
                 <button id="fiveDigitButton">5 Digits</button>
                 <button id="sixDigitButton">6 Digits</button>
+                <button id="resetFromPracticeButton">Reset</button>
             </div>
         `;
 
@@ -471,6 +500,10 @@ window.addEventListener("load", async() => {
             await new Promise(resolve => setTimeout(resolve, 50));
 
             setupPage("practice", digitNum);
+        });
+
+        document.getElementById("resetFromPracticeButton").addEventListener("click", async () => {
+            setMode();
         });
         
         playAgainButton.addEventListener("click", async () => {
@@ -518,10 +551,11 @@ window.addEventListener("load", async() => {
         const challengeTime = (Date.now() - challengeStart) / 1000;
         messageDiv.innerHTML = "Challenge Complete!";
         messageDiv.innerHTML += `<br>Time: ${challengeTime} seconds`;
-        resetButton.style.display = "block";
+        
+        resetFromChallengeButton.style.display = "block";   
 
-        document.getElementById("resetButton").addEventListener("click", async () => {
-            window.location.reload();
+        document.getElementById("resetFromChallengeButton").addEventListener("click", async () => {
+            setMode();
         });
     } 
 
@@ -534,14 +568,9 @@ window.addEventListener("load", async() => {
     const playAgainButton = document.getElementById("playAgainButton");
     const submitGuessButton = document.getElementById("submitGuessButton");
     const revealCodeButton = document.getElementById("revealCodeButton");
-    const resetButton = document.getElementById("resetButton");
-    let mode = "challenge";
-
-    if (mode === "practice") {
-        setupPractice();
-    } else {
-        setupChallenge();
-    }
+    const resetFromChallengeButton = document.getElementById("resetFromChallengeButton");
+    
+    setMode();
 
     // splash screen fadeaway
     setTimeout(() => {
