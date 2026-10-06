@@ -118,8 +118,7 @@ body {
 #fiveDigitButton,
 #sixDigitButton,
 #sevenDigitButton,
-#resetFromChallengeButton,
-#resetFromPracticeButton,
+#resetButton,
 #submitGuessButton,
 #revealCodeButton,
 #playAgainButton,
@@ -168,6 +167,7 @@ p {
 #messageDiv {
     text-align: center;
     margin-top: 20px;
+    margin-bottom: 20px;
     font-size: 26px;
 }
 

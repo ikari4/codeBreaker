@@ -177,7 +177,8 @@ window.addEventListener("load", async() => {
     function setMode() {
         cluesDiv.innerHTML = "";
         messageDiv.innerHTML = "";
-        resetFromChallengeButton.style.display = "none";
+        resetButton.style.display = "none";
+        playAgainButton.style.display = "none";
         
         // Set the game mode selection interface
         guessDiv.innerHTML = `
@@ -198,7 +199,15 @@ window.addEventListener("load", async() => {
         });
         
         document.getElementById("howToPlayButton").addEventListener("click", async () => {
-
+            guessDiv.innerHTML = `
+                <div class="gameChoice">
+                    <p>How to Play:</p>
+                    <p>Use the mathematical clues to deduce the correct number and crack the secret code. Each clue narrows down the possible solutions.</p>
+                    <p>Practice Mode allows you to solve puzzles of either 4, 5 or 6 digits.</p>
+                    <p>Challenge Mode is a timed challenge to solve one of each code length puzzle and compete against other players.</p>
+                </div>
+            `;
+            resetButton.style.display = "block";
         });
     }
 
@@ -456,9 +465,10 @@ window.addEventListener("load", async() => {
                 <button id="fourDigitButton">4 Digits</button>
                 <button id="fiveDigitButton">5 Digits</button>
                 <button id="sixDigitButton">6 Digits</button>
-                <button id="resetFromPracticeButton">Reset</button>
             </div>
         `;
+
+        resetButton.style.display = "block";
 
         document.getElementById("fourDigitButton").addEventListener("click", async () => {
             digitNum = 4;
@@ -502,10 +512,6 @@ window.addEventListener("load", async() => {
             setupPage("practice", digitNum);
         });
 
-        document.getElementById("resetFromPracticeButton").addEventListener("click", async () => {
-            setMode();
-        });
-        
         playAgainButton.addEventListener("click", async () => {
             await playAgainSound();
             cluesDiv.innerHTML = "";
@@ -548,15 +554,11 @@ window.addEventListener("load", async() => {
             await setupPage("challenge", i);
         }
 
-        const challengeTime = (Date.now() - challengeStart) / 1000;
+        const challengeTime = ((Date.now() - challengeStart) / 1000).toFixed(1);
         messageDiv.innerHTML = "Challenge Complete!";
         messageDiv.innerHTML += `<br>Time: ${challengeTime} seconds`;
         
         resetFromChallengeButton.style.display = "block";   
-
-        document.getElementById("resetFromChallengeButton").addEventListener("click", async () => {
-            setMode();
-        });
     } 
 
     // main script starts here
@@ -568,8 +570,11 @@ window.addEventListener("load", async() => {
     const playAgainButton = document.getElementById("playAgainButton");
     const submitGuessButton = document.getElementById("submitGuessButton");
     const revealCodeButton = document.getElementById("revealCodeButton");
-    const resetFromChallengeButton = document.getElementById("resetFromChallengeButton");
-    
+
+    document.getElementById("resetButton").addEventListener("click", async () => {
+        setMode();
+    });
+
     setMode();
 
     // splash screen fadeaway
