@@ -49,6 +49,15 @@ body {
     gap: 8px;
 }
 
+ #topButtons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 8px;
+}
+
 .digitDisplay {
     display: flex;
     justify-content: center;
