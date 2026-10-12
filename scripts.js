@@ -175,6 +175,7 @@ window.addEventListener("load", async() => {
     }
 
     function setMode() {
+        // user choice of practice, callenge or rules
         guessDiv.innerHTML = "";
         cluesDiv.innerHTML = "";
         messageDiv.innerHTML = "";
@@ -186,104 +187,98 @@ window.addEventListener("load", async() => {
         fourDigitButton.style.display = "none";
         fiveDigitButton.style.display = "none";
         sixDigitButton.style.display = "none";
-        resetButton.style.display = "none";
         submitGuessButton.style.display = "none";
         revealCodeButton.style.display = "none";
-
-        practiceButton.addEventListener("click", async () => {
-            setupPractice();
-        });
-
-        challengeButton.addEventListener("click", async () => {
-            setupChallenge();
-        });
-        
-        howToPlayButton.addEventListener("click", async () => {
-            howToPlay();
-        });
     }
 
     function makePuzzle(mode,digitNum) {
-        // randomly select the digits for the puzzle
+        
         let digits = [];
-        for (let i = 0; i < digitNum; i++) {
-            const num = Math.floor( Math.random() * 10 );
-            digits[i] = num;
-        }
-        //
-        console.log(`The number is ${digits.join("")}`);
-        //
-        // create array of candidates
-        let candidates = [];
-        for (let i = 0; i < Math.pow(10, digitNum); i++) {
-            stringNum = i.toString().padStart(digitNum, '0');
-            candidates.push(stringNum);
-        }
-
-        // reset digit display
-        digitValues.fill(0);
-
-        digitDisplays.forEach(display => {
-            display.textContent = "0";
-        });
-
-        digitButtons.forEach(button => {
-            button.disabled = false;
-        });
-
-        // loop to find valid puzzle with unique solution set
         let selectedClues = [];
+        let candidates = [];
+        let candidateCache = [];
 
-        // create cache of solution sets for all clues given puzzle digits
-        let candidateCache = new Map();
-        clueLog.forEach (clue => {
-            candidateCache.set(
-                clue.name, 
-                clue.remainingCandidates(
-                    clue.getValue(digits, digitNum), 
-                    candidates, 
-                    digitNum,
-                    digits
-                ));
-        });
-
-        // reset clues and solution set for each iteration
-        let availableClues = [...clueLog];
-        selectedClues = [];
-
-        // pick the clue that produces the smallest candidate set
-        const firstClue = findBestFirstClue(availableClues, candidateCache);
-
-        availableClues.splice(availableClues.indexOf(firstClue), 1);
-
-        selectedClues.push(firstClue);
-
-        solutionSet = getSolutionSet(selectedClues, candidateCache);
-
-        // greedily add the clue that reduces the solution set the most
-        while (solutionSet.length > 1 && availableClues.length > 0) {
-
-            const best = findBestNextClue(availableClues, solutionSet, candidateCache);
-
-            if (!best.clue) {
-                break;
+        while (true) {
+            // randomly select the digits for the puzzle
+            digits = [];
+            for (let i = 0; i < digitNum; i++) {
+                const num = Math.floor( Math.random() * 10 );
+                digits[i] = num;
+            }
+            //
+            console.log(`The number is ${digits.join("")}`);
+            //
+            // create array of candidates
+            candidates = [];
+            for (let i = 0; i < Math.pow(10, digitNum); i++) {
+                let stringNum = i.toString().padStart(digitNum, '0');
+                candidates.push(stringNum);
             }
 
-            selectedClues.push(best.clue);
+            // reset digit display
+            digitValues.fill(0);
 
-            availableClues.splice(availableClues.indexOf(best.clue), 1);
+            digitDisplays.forEach(display => {
+                display.textContent = "0";
+            });
 
-            solutionSet = best.solutionSet;
+            digitButtons.forEach(button => {
+                button.disabled = false;
+            });
 
-            // no solution — try new clues
-            if (solutionSet.length === 0 || availableClues.length === 0) {
-                continue;
+            // loop to find valid puzzle with unique solution set
+            selectedClues = [];
+
+            // create cache of solution sets for all clues given puzzle digits
+            candidateCache = new Map();
+            clueLog.forEach (clue => {
+                candidateCache.set(
+                    clue.name, 
+                    clue.remainingCandidates(
+                        clue.getValue(digits, digitNum), 
+                        candidates, 
+                        digitNum,
+                        digits
+                    ));
+            });
+
+            // reset clues and solution set for each iteration
+            let availableClues = [...clueLog];
+            selectedClues = [];
+
+            // pick the clue that produces the smallest candidate set
+            const firstClue = findBestFirstClue(availableClues, candidateCache);
+
+            availableClues.splice(availableClues.indexOf(firstClue), 1);
+
+            selectedClues.push(firstClue);
+
+            solutionSet = getSolutionSet(selectedClues, candidateCache);
+
+            // greedily add the clue that reduces the solution set the most
+            while (solutionSet.length > 1 && availableClues.length > 0) {
+
+                const best = findBestNextClue(availableClues, solutionSet, candidateCache);
+
+                if (!best.clue) {
+                    break;
+                }
+
+                selectedClues.push(best.clue);
+
+                availableClues.splice(availableClues.indexOf(best.clue), 1);
+
+                solutionSet = best.solutionSet;
+
             }
 
             // unique solution — we're done
             if (solutionSet.length === 1) {
+                // console.log("unique solution found");
                 break;
             }
+            
+            // console.log("no solution, pick new number");
         }
 
         // remove any clues that are not necessary by testing without them one by one
@@ -323,6 +318,7 @@ window.addEventListener("load", async() => {
         cluesDiv.innerHTML = "";
 
         // display clues on the screen
+        creatingPuzzleMessage.style.display = "none";
         selectedClues.forEach(clue => {
             const clueElement = document.createElement("p");
             clueElement.innerHTML = clue.getText(clue.getValue(digits, digitNum), digitNum);
@@ -333,140 +329,107 @@ window.addEventListener("load", async() => {
     async function setupPage(mode, digitNum) {
         // promise set to return to challenge loop in challenge mode
         return new Promise(resolve => {
-        
-        guessDiv.innerHTML = "";
-        fourDigitButton.style.display = "none";
-        fiveDigitButton.style.display = "none";
-        sixDigitButton.style.display = "none";
+            resolvePuzzle = resolve;
+     
+            // reset the digit-control arrays
+            digitDisplays.length = 0;
+            digitButtons.length = 0;
+            digitValues.length = 0;
 
-        // reset the digit-control arrays
-        digitDisplays.length = 0;
-        digitButtons.length = 0;
-        digitValues.length = 0;
+            // create the digit controls for the selected game
+            for (let i = 0; i < digitNum; i++) {
+                const digitBox = document.createElement("div");
+                digitBox.classList.add("digitBox");
 
-        // create the digit controls for the selected game
-        for (let i = 0; i < digitNum; i++) {
-            const digitBox = document.createElement("div");
-            digitBox.classList.add("digitBox");
+                const upButton = document.createElement("button");
+                upButton.textContent = "▲";
+                upButton.classList.add("digitUp");
 
-            const upButton = document.createElement("button");
-            upButton.textContent = "▲";
-            upButton.classList.add("digitUp");
+                const digitDisplay = document.createElement("div");
+                digitDisplay.textContent = "0";
+                digitDisplay.classList.add("digitDisplay");
 
-            const digitDisplay = document.createElement("div");
-            digitDisplay.textContent = "0";
-            digitDisplay.classList.add("digitDisplay");
+                const downButton = document.createElement("button");
+                downButton.textContent = "▼";
+                downButton.classList.add("digitDown");
 
-            const downButton = document.createElement("button");
-            downButton.textContent = "▼";
-            downButton.classList.add("digitDown");
+                digitValues[i] = 0;
 
-            digitValues[i] = 0;
+                let upTimeout;
+                let downTimeout;
 
-            let upTimeout;
-            let downTimeout;
+                upButton.addEventListener("click", () => {
+                    if (upTimeout) return;
 
-            upButton.addEventListener("click", () => {
-                if (upTimeout) return;
+                    digitValues[i] = (digitValues[i] + 1) % 10;
+                    digitDisplay.textContent = digitValues[i];
 
-                digitValues[i] = (digitValues[i] + 1) % 10;
-                digitDisplay.textContent = digitValues[i];
-
-                upTimeout = setTimeout(() => {
-                    upTimeout = null;
-                }, 120);
-            });
-
-            downButton.addEventListener("click", () => {
-                if (downTimeout) return;
-
-                digitValues[i] = (digitValues[i] + 9) % 10;
-                digitDisplay.textContent = digitValues[i];
-
-                downTimeout = setTimeout(() => {
-                    downTimeout = null;
-                }, 120);
-            });
-
-            digitDisplays.push(digitDisplay);
-            digitButtons.push(upButton, downButton);
-
-            digitBox.append(upButton, digitDisplay, downButton);
-            guessDiv.append(digitBox);
-        }
-
-        submitGuessButton.style.display = "block";
-        
-        if (mode === "practice") {
-            revealCodeButton.style.display = "block";
-        }
-
-        submitGuessButton.addEventListener("click", async () => {
-
-            const guess = digitValues.join("");
-
-            if (guess === solutionSet[0]) {
-                await playCorrectSound();
-
-                messageDiv.innerHTML = "Correct!<br>You've cracked it!";
-                messageDiv.style.color = "#22cc44";
-
-                submitGuessButton.style.display = "none";
-                revealCodeButton.style.display = "none";
-
-                // disable all up/down buttons
-                digitButtons.forEach(button => {
-                    button.disabled = true;
+                    upTimeout = setTimeout(() => {
+                        upTimeout = null;
+                    }, 120);
                 });
 
-                // skip play again button if in challenge mode
-                if (mode === "practice") {
-                    playAgainButton.style.display = "block";
-                }
+                downButton.addEventListener("click", () => {
+                    if (downTimeout) return;
 
-                // resolve the promise to continue in challenge mode
-                resolve();
+                    digitValues[i] = (digitValues[i] + 9) % 10;
+                    digitDisplay.textContent = digitValues[i];
 
-            } else {
-                await playIncorrectSound();
+                    downTimeout = setTimeout(() => {
+                        downTimeout = null;
+                    }, 120);
+                });
 
-                messageDiv.innerHTML = "Incorrect guess!<br>Try again!";
-                messageDiv.style.color = "#ff4444";
+                digitDisplays.push(digitDisplay);
+                digitButtons.push(upButton, downButton);
+
+                digitBox.append(upButton, digitDisplay, downButton);
+                guessDiv.append(digitBox);
             }
+
+            submitGuessButton.style.display = "block";
+
+            if (mode === "practice") {
+                revealCodeButton.style.display = "block";
+                resetButton.style.display = "block";
+            }
+
+            makePuzzle(mode, digitNum);
         });
-
-        
-        revealCodeButton.addEventListener("click", async () => {
-            messageDiv.innerHTML = `The code is: ${solutionSet[0]}`;
-            messageDiv.style.color = "#33ff33";
-
-            submitGuessButton.style.display = "none";
-            revealCodeButton.style.display = "none";
-            playAgainButton.style.display = "block";
-        });
-
-        makePuzzle(mode, digitNum);
-    
-    });
     }
 
     function setupPractice() {
         // user choice of four or five or six digit game
         guessDiv.innerHTML = "";
+        cluesDiv.innerHTML = "";
+        messageDiv.innerHTML = "";
+        resetButton.style.display = "block";
+        playAgainButton.style.display = "none";
         practiceButton.style.display = "none";
         challengeButton.style.display = "none";
         howToPlayButton.style.display = "none";
-        resetButton.style.display = "block";
         fourDigitButton.style.display = "block";
         fiveDigitButton.style.display = "block";
         sixDigitButton.style.display = "block";
+        submitGuessButton.style.display = "none";
+        revealCodeButton.style.display = "none";
     }
 
     async function setupChallenge() {
-        
+        // reset the game state for challenge mode
+        guessDiv.innerHTML = "";
+        cluesDiv.innerHTML = "";
+        messageDiv.innerHTML = "";
+        resetButton.style.display = "none";
+        playAgainButton.style.display = "none";
         practiceButton.style.display = "none";
         challengeButton.style.display = "none";
         howToPlayButton.style.display = "none";
+        fourDigitButton.style.display = "none";
+        fiveDigitButton.style.display = "none";
+        sixDigitButton.style.display = "none";
+        submitGuessButton.style.display = "none";
+        revealCodeButton.style.display = "none";
 
         const challengeStart = Date.now();
 
@@ -476,18 +439,15 @@ window.addEventListener("load", async() => {
         }, 100);    
         
         for (let i = 4; i <= 6; i++) {
-           
-            cluesDiv.innerHTML = `
-                <div class="creatingPuzzle">
-                    Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-                </div>
-            `;
+            console.log('in challenge loop: ', mode);
+            guessDiv.innerHTML = "";
+            cluesDiv.innerHTML = "";
+            creatingPuzzleMessage.style.display = "block";
 
             // give the browser time to display the loading message
             await new Promise(resolve => setTimeout(resolve, 50));
 
             await setupPage("challenge", i);
-         
         }
         
         clearInterval(timerInterval);
@@ -503,9 +463,9 @@ window.addEventListener("load", async() => {
         guessDiv.innerHTML = `
             <div class="gameChoice">
                 <p>How to Play:</p>
-                <p>Use the mathematical clues to deduce the correct number and crack the secret code. Each clue narrows down the possible solutions.</p>
-                <p>Practice Mode allows you to solve puzzles of either 4, 5 or 6 digits.</p>
-                <p>Challenge Mode is a timed challenge to solve one of each code length puzzle and compete against other players.</p>
+                <p>Use the mathematical clues to deduce the correct number and crack the secret code</p>
+                <p>NERD HEAVEN allows you to solve puzzles of either 4, 5 or 6 digits as much as you'd like</p>
+                <p>CHALLENGE MODE is a timed challenge to solve one of each code length puzzle and compete against other nerds</p>
             </div>
         `;
         resetButton.style.display = "block";
@@ -530,6 +490,9 @@ window.addEventListener("load", async() => {
     const challengeButton = document.getElementById("challengeButton");
     const howToPlayButton = document.getElementById("howToPlayButton");
     const resetButton = document.getElementById("resetButton");
+    const creatingPuzzleMessage = document.getElementById("creatingPuzzleMessage");
+    let mode = "";
+    let resolvePuzzle;
 
     resetButton.addEventListener("click", async () => {
         setMode();
@@ -537,11 +500,12 @@ window.addEventListener("load", async() => {
 
     fourDigitButton.addEventListener("click", async () => {
         digitNum = 4;
-        cluesDiv.innerHTML = `
-            <div class="creatingPuzzle">
-                Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-            </div>
-        `;
+        creatingPuzzleMessage.style.display = "block";
+        guessDiv.innerHTML = "";
+        fourDigitButton.style.display = "none";
+        fiveDigitButton.style.display = "none";
+        sixDigitButton.style.display = "none";
+        resetButton.style.display = "none";
 
         // give the browser time to display the loading message
         await new Promise(resolve => setTimeout(resolve, 50));
@@ -551,11 +515,12 @@ window.addEventListener("load", async() => {
 
     fiveDigitButton.addEventListener("click", async () => {
         digitNum = 5;
-        cluesDiv.innerHTML = `
-            <div class="creatingPuzzle">
-                Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-            </div>
-        `;
+        creatingPuzzleMessage.style.display = "block";
+        guessDiv.innerHTML = "";
+        fourDigitButton.style.display = "none";
+        fiveDigitButton.style.display = "none";
+        sixDigitButton.style.display = "none";
+        resetButton.style.display = "none";
 
         // give the browser time to display the loading message
         await new Promise(resolve => setTimeout(resolve, 50));
@@ -565,11 +530,12 @@ window.addEventListener("load", async() => {
 
     sixDigitButton.addEventListener("click", async () => {
         digitNum = 6;
-        cluesDiv.innerHTML = `
-            <div class="creatingPuzzle">
-                Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-            </div>
-        `;
+        creatingPuzzleMessage.style.display = "block";
+        guessDiv.innerHTML = "";
+        fourDigitButton.style.display = "none";
+        fiveDigitButton.style.display = "none";
+        sixDigitButton.style.display = "none";
+        resetButton.style.display = "none";
 
         // give the browser time to display the loading message
         await new Promise(resolve => setTimeout(resolve, 50));
@@ -599,6 +565,66 @@ window.addEventListener("load", async() => {
         await new Promise(resolve => setTimeout(resolve, 50));
 
         setupPractice();
+    });
+
+    practiceButton.addEventListener("click", async () => {
+        mode = "practice";
+        setupPractice();
+    });
+
+    challengeButton.addEventListener("click", async () => {
+        mode = "challenge";
+        setupChallenge();
+    });
+    
+    howToPlayButton.addEventListener("click", async () => {
+        howToPlay();
+    });
+
+    revealCodeButton.addEventListener("click", async () => {
+        messageDiv.innerHTML = `The code is: ${solutionSet[0]}`;
+        messageDiv.style.color = "#33ff33";
+
+        submitGuessButton.style.display = "none";
+        revealCodeButton.style.display = "none";
+        playAgainButton.style.display = "block";
+    });
+
+    submitGuessButton.addEventListener("click", async () => {
+
+        const guess = digitValues.join("");
+
+        if (guess === solutionSet[0]) {
+            await playCorrectSound();
+
+            messageDiv.innerHTML = "Correct!<br>You've cracked it!";
+            messageDiv.style.color = "#22cc44";
+
+            submitGuessButton.style.display = "none";
+            revealCodeButton.style.display = "none";
+
+            // disable all up/down buttons
+            digitButtons.forEach(button => {
+                button.disabled = true;
+            });
+
+            // skip play again button if in challenge mode
+            if (mode === "practice") {
+                playAgainButton.style.display = "block";
+            }
+
+            // resolve the promise to continue in challenge mode
+            if (resolvePuzzle) {
+                resolvePuzzle();
+                resolvePuzzle = null;
+            }
+
+        } else {
+            await playIncorrectSound();
+
+            messageDiv.innerHTML = "Incorrect guess!<br>Try again!";
+            messageDiv.style.color = "#ff4444";
+        }
     });
 
     setMode();

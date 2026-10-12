@@ -413,37 +413,6 @@ const cMinDigit = {
     }
 };
 
-// clue - is 7 a factor of the number
-const factorOf7 = {
-
-    name: "factorOf7",
-
-    getValue: (digits, digitNum) => {
-        const number = Number(digits.join(""));
-        return number % 7 === 0;
-    },
-
-    getText: value => {
-        if (value === true) {
-                return `I am a multiple of 7`;
-        } else {
-                return `I am not a multiple of 7`
-        }
-    },
-
-    remainingCandidates: (value, candidates, digitNum, digits) => {
-        const candSet = new Set();
-        candidates.forEach(candidate => {        
-            if (candidate % 7 === 0 && value === true) {
-                candSet.add(candidate);
-            } else if (candidate % 7 !== 0 && value === false) {
-                candSet.add(candidate);
-            }
-        });
-        return candSet;
-    }
-};
-
 // clue - is 5 a factor of the number
 const factorOf5 = {
 
@@ -551,6 +520,50 @@ const cMiddleProduct = {
   }
 };
 
+const cMiddleSum = {
+
+  name: "cMiddleSum",
+
+  getValue: (digits, digitNum) => {
+    let sum = 0;
+    // produces sum of middle three digits of odd digitNums or middle two of even
+    for (let i = Math.trunc((digitNum - 2) / 2); i <= Math.trunc((digitNum + 1) / 2); i++) {
+      sum += digits[i];
+    }
+      return sum;
+  },
+
+  getText: (value, digitNum) => {
+    if (digitNum % 2 === 0) {
+      return `The sum of my middle<br>two digits is ${value}`
+    } else {
+      return `The sum of my middle<br>three digits is ${value}`
+    }
+
+  },
+
+  remainingCandidates: (value, candidates, digitNum, digits) => {
+    const candSet = new Set();
+    candidates.forEach(candidate => {
+
+        let sum = 0;
+        const digs = [...candidate].map(Number);
+        // produces sum of middle three digits of odd digitNums or middle two of even
+        for (let i = Math.trunc((digitNum - 2) / 2); 
+                i <= Math.trunc((digitNum + 1) / 2); 
+                i++) {
+            sum += digs[i]; 
+        }
+
+        if (sum === value) { 
+            candSet.add(candidate);
+        }
+      
+    });
+
+    return candSet;
+  }
+};
 
 // clue log
 const clueLog = [
@@ -565,12 +578,12 @@ const clueLog = [
     cAGreaterB,
     cMaxDigit,
     cMinDigit,
-    factorOf7,
     factorOf5,
     factorOf3,
     cFirstThreeProduct,
     cLastThreeProduct,
     cLastThreeSum,
     cFirstThreeSum,
-    cMiddleProduct
+    cMiddleProduct,
+    cMiddleSum
 ];
