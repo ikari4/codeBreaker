@@ -8,6 +8,24 @@ body {
     justify-content: center;
 }
 
+#loginModal {
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+#loginModal input {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+#loginModal label {
+    display: block;
+}
+
 #splash {
     position: fixed;
     top: 0;
@@ -39,6 +57,7 @@ body {
     flex-direction: column;
     margin-top: 20px;
     font-size: 32px;
+    text-align: center;
 }
 
 #guessDiv {
@@ -123,17 +142,7 @@ body {
 }
 
 
-#fourDigitButton,
-#fiveDigitButton,
-#sixDigitButton,
-#sevenDigitButton,
-#resetButton,
-#submitGuessButton,
-#revealCodeButton,
-#playAgainButton,
-#practiceButton,
-#challengeButton,
-#howToPlayButton {
+.button {
     margin-left: 12px;
     height: 55px;
     width: 116px;

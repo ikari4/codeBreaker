@@ -476,11 +476,15 @@ window.addEventListener("load", async() => {
 
     // main script starts here
     // populate the page
+    const username = localStorage.getItem("codeBreakerName");
+    const loginModal = document.getElementById("loginModal");
+    const loginBtn = document.getElementById("loginBtn");
     const page = document.getElementById("page");
+    const titleDiv = document.getElementById("titleDiv");
     const guessDiv = document.getElementById("guessDiv");
     const cluesDiv = document.getElementById("cluesDiv");
     const messageDiv = document.getElementById("messageDiv");
-    // const standingsDiv = document.getElementById("standingsDiv");
+    const standingsDiv = document.getElementById("standingsDiv");
     const playAgainButton = document.getElementById("playAgainButton");
     const submitGuessButton = document.getElementById("submitGuessButton");
     const revealCodeButton = document.getElementById("revealCodeButton");
@@ -494,6 +498,50 @@ window.addEventListener("load", async() => {
     const creatingPuzzleMessage = document.getElementById("creatingPuzzleMessage");
     let mode = "";
     let resolvePuzzle;
+
+    // show login screen if user not logged in
+    if(!username) {
+        loginModal.style.display = "block";
+    } else {
+        page.style.display = "block";
+        titleDiv.innerHTML = `codeBreaker<br>welcome, ${username}!`;
+        setMode();
+    }
+
+    // on 'login' button click
+    loginBtn.addEventListener("click", async () => {
+        const inputUsername = document.getElementById("inputUsername").value.trim();
+        const inputPassword = document.getElementById("inputPassword").value.trim();
+        const loginError = document.getElementById("loginError");
+        loginError.textContent = "";
+
+        // call the backend js
+        try {
+            const loginRes = await fetch("/api/loginLogic", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ inputUsername, inputPassword })
+            });
+
+            // process the returned data
+            const data = await loginRes.json();
+            if (!loginRes.ok) {
+                loginError.textContent = data.error;
+                return;
+            }
+            
+            // save the date in local storage and reload page
+            localStorage.setItem("codeBreakerName", data.user.username);
+            localStorage.setItem("codeBreakerId", data.user.id);
+            document.getElementById("loginModal").style.display = "none";
+            titleDiv.textContent = `codeBreaker - ${username}`;
+            setMode();
+
+        } catch (error) {
+            console.error("Error during login:", err);
+            loginError.textContent = "An error occurred. Please try again.";
+        }
+    });
 
     resetButton.addEventListener("click", async () => {
         setMode();
@@ -628,17 +676,14 @@ window.addEventListener("load", async() => {
         }
     });
 
-    setMode();
-
-    // splash screen fadeaway
-    setTimeout(() => {
-        const splash = document.getElementById("splash");
-        splash.style.opacity = "0";
-
+        // splash screen fadeaway
         setTimeout(() => {
-            splash.style.display = "none";
-            page.style.display = "block";
-        }, 100);
-    }, 600);
+            const splash = document.getElementById("splash");
+            splash.style.opacity = "0";
 
+            setTimeout(() => {
+                splash.style.display = "none";
+                page.style.display = "block";
+            }, 100);
+        }, 600);
 });
