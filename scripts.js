@@ -189,6 +189,7 @@ window.addEventListener("load", async() => {
         sixDigitButton.style.display = "none";
         submitGuessButton.style.display = "none";
         revealCodeButton.style.display = "none";
+        logoutBtn.style.display = "block";
     }
 
     function makePuzzle(mode,digitNum) {
@@ -272,7 +273,8 @@ window.addEventListener("load", async() => {
 
             }
 
-            // unique solution — we're done
+            // unique solution — break out of the loop and use this puzzle
+            // if no solution or no more clues, pick new number and try again
             if (solutionSet.length === 1) {
                 // console.log("unique solution found");
                 break;
@@ -413,6 +415,7 @@ window.addEventListener("load", async() => {
         sixDigitButton.style.display = "block";
         submitGuessButton.style.display = "none";
         revealCodeButton.style.display = "none";
+        logoutBtn.style.display = "block";
     }
 
     async function setupChallenge() {
@@ -430,6 +433,7 @@ window.addEventListener("load", async() => {
         sixDigitButton.style.display = "none";
         submitGuessButton.style.display = "none";
         revealCodeButton.style.display = "none";
+        logoutBtn.style.display = "block";
 
         const challengeStart = Date.now();
 
@@ -462,10 +466,11 @@ window.addEventListener("load", async() => {
     function howToPlay() {
         guessDiv.innerHTML = `
             <div class="gameChoice">
-                <p>How to Play:</p>
-                <p>Use the mathematical clues to deduce the correct number and crack the secret code</p>
-                <p>NERD HEAVEN allows you to solve puzzles of either 4, 5 or 6 digits as much as you'd like</p>
-                <p>CHALLENGE MODE is a timed challenge to solve one of each code length puzzle and compete against other nerds</p>
+                <p>how to play:</p>
+                <p>use the mathematical clues to deduce the correct number and crack the secret code</p>
+                <p><strong>nerd heaven</strong> allows you to solve puzzles of either 4, 5 or 6 digits as much as you'd like</p>
+                <p><strong>challenge mode</strong> is a timed challenge to solve one of each code length puzzle and compete against other nerds</p>
+                <p>the use of a caclulator is discouraged - try to solve the puzzles in your head for extra nerdiness</p>
             </div>
         `;
         resetButton.style.display = "block";
@@ -476,9 +481,11 @@ window.addEventListener("load", async() => {
 
     // main script starts here
     // populate the page
-    const username = localStorage.getItem("codeBreakerName");
+    let username = localStorage.getItem("codeBreakerName");
     const loginModal = document.getElementById("loginModal");
     const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutButton");
+    const registerBtn = document.getElementById("registerBtn");
     const page = document.getElementById("page");
     const titleDiv = document.getElementById("titleDiv");
     const guessDiv = document.getElementById("guessDiv");
@@ -510,17 +517,17 @@ window.addEventListener("load", async() => {
 
     // on 'login' button click
     loginBtn.addEventListener("click", async () => {
-        const inputUsername = document.getElementById("inputUsername").value.trim();
-        const inputPassword = document.getElementById("inputPassword").value.trim();
+        const loginEmail = document.getElementById("loginEmail").value.trim();
+        const loginPassword = document.getElementById("loginPassword").value.trim();
         const loginError = document.getElementById("loginError");
         loginError.textContent = "";
 
-        // call the backend js
+        // call the backend js to check the username and password
         try {
             const loginRes = await fetch("/api/loginLogic", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ inputUsername, inputPassword })
+                body: JSON.stringify({ loginEmail, loginPassword })
             });
 
             // process the returned data
@@ -530,11 +537,49 @@ window.addEventListener("load", async() => {
                 return;
             }
             
-            // save the date in local storage and reload page
+            // save the data in local storage and go to mode selection page
             localStorage.setItem("codeBreakerName", data.user.username);
             localStorage.setItem("codeBreakerId", data.user.id);
             document.getElementById("loginModal").style.display = "none";
-            titleDiv.textContent = `codeBreaker - ${username}`;
+            username = localStorage.getItem("codeBreakerName");
+            titleDiv.innerHTML = `codeBreaker<br>welcome, ${username}!`;
+            setMode();
+
+        } catch (error) {
+            console.error("Error during login:", err);
+            loginError.textContent = "An error occurred. Please try again.";
+        }
+    });
+
+    // on 'register' button click
+    registerBtn.addEventListener("click", async () => {
+        const registerUsername = document.getElementById("registerUsername").value.trim();
+        const registerEmail = document.getElementById("registerEmail").value.trim();
+        const registerPassword = document.getElementById("registerPassword").value.trim();
+        const registerError = document.getElementById("registerError");
+        registerError.textContent = "";
+
+        // call the backend js to check the username and password
+        try {
+            const registerRes = await fetch("/api/registerLogic", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ registerUsername, registerEmail, registerPassword })
+            });
+
+            // process the returned data
+            const data = await registerRes.json();
+            if (!registerRes.ok) {
+                registerError.textContent = data.error;
+                return;
+            }
+            
+            // save the data in local storage and go to mode selection page
+            localStorage.setItem("codeBreakerName", data.user.username);
+            localStorage.setItem("codeBreakerId", data.user.id);
+            document.getElementById("loginModal").style.display = "none";
+            username = localStorage.getItem("codeBreakerName");
+            titleDiv.innerHTML = `codeBreaker<br>welcome, ${username}!`;
             setMode();
 
         } catch (error) {
@@ -674,6 +719,13 @@ window.addEventListener("load", async() => {
             messageDiv.innerHTML = "Incorrect guess!<br>Try again!";
             messageDiv.style.color = "#ff4444";
         }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+        // clear local storage and reset the page
+        localStorage.removeItem("codeBreakerName");
+        localStorage.removeItem("codeBreakerId");
+        window.location.reload();
     });
 
         // splash screen fadeaway

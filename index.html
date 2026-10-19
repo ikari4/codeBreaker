@@ -16,44 +16,57 @@
         <img src="codeBreaker.png" alt="Loading...">
     </div>
     <div id="loginModal" style="display:none">
+        <div id="loginTitleDiv">codeBreaker<br>login or register</div>
         <div class="inputRow">
-            <label for="inputUsername">username: </label>
-            <input id="inputUsername" type="text" placeholder="username" required>
-            <!-- <label for="inputEmail">email: </label>
-            <input id="inputEmail" type="email" placeholder="email" required> -->
+            <label for="loginEmail">email: </label>
+            <input id="loginEmail" type="email" placeholder="email" required>
+            <label for="loginPassword">password: </label>
+            <input id="loginPassword" type="password" placeholder="password" required>
         </div>
         <div class="inputRow">
-            <label for="inputPassword">password: </label>
-            <input id="inputPassword" type="password" placeholder="password" required>
+            <button id="loginBtn" class="button">login</button>
+        </div>
+        <div id="orDiv">--- or ---</div>
+        <div class="inputRow">
+            <label for="registerUsername">username: </label>
+            <input id="registerUsername" type="text" placeholder="username" required>
+            <label for="registerEmail">email: </label>
+            <input id="registerEmail" type="email" placeholder="email" required>
+            <label for="registerPassword">password: </label>
+            <input id="registerPassword" type="password" placeholder="password" required>
         </div>
         <div class="inputRow">
-            <button id="loginBtn" class="button">LOGIN OR REGISTER</button>
+            <button id="registerBtn" class="button">register</button>
         </div>
         <p id="loginError" style="color:red;"></p>
+        <p id="registerError" style="color:red;"></p>
     </div>
     <div id="page" style="display:none;">
         <div id="outerDiv">
             <div id="guessDiv"></div>
             <div id="topButtons">
-                <button id="practiceButton" class="button" style="display: none;">NERD HEAVEN</button>
-                <button id="challengeButton" class="button" style="display: none;">CHALLENGE MODE</button>
-                <button id="howToPlayButton" class="button" style="display: none;">HOW TO PLAY</button>
-                <button id="fourDigitButton" class="button" style="display: none;">4 Digits</button>
-                <button id="fiveDigitButton" class="button" style="display: none;">5 Digits</button>
-                <button id="sixDigitButton" class="button" style="display: none;">6 Digits</button>
+                <button id="practiceButton" class="button" style="display: none;">nerd heaven</button>
+                <button id="challengeButton" class="button" style="display: none;">challenge mode</button>
+                <button id="howToPlayButton" class="button" style="display: none;">how to play</button>
+                <button id="fourDigitButton" class="button" style="display: none;">4 digits</button>
+                <button id="fiveDigitButton" class="button" style="display: none;">5 digits</button>
+                <button id="sixDigitButton" class="button" style="display: none;">6 digits</button>
             </div>
             <div id ="creatingPuzzleMessage"class="creatingPuzzle" style="display: none;">
                     Creating new puzzle<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
             </div>  
             <div id="cluesDiv"></div>
             <div id="buttonDiv">
-                <button id="revealCodeButton" class="button" style="display: none;">REVEAL CODE</button>
-                <button id="submitGuessButton" class="button" style="display: none;">SUBMIT GUESS</button>
-                <button id="resetButton" class="button" style="display: none;">HOME</button>
-                <button id="playAgainButton" class="button" style="display: none;">PLAY AGAIN</button>
+                <button id="revealCodeButton" class="button" style="display: none;">reveal code</button>
+                <button id="submitGuessButton" class="button" style="display: none;">submit guess</button>
+                <button id="resetButton" class="button" style="display: none;">home</button>
+                <button id="playAgainButton" class="button" style="display: none;">play again</button>
             </div>
             <div id="messageDiv"></div>
             <div id="standingsDiv"></div>
+            <div id="logoutDiv">
+                <button id="logoutButton" class="button" style="display: none;">logout</button>
+            </div>
         </div>
     </div>
     <script src="./clues.js"></script>

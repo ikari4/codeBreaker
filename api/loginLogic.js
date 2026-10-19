@@ -5,18 +5,13 @@ import { createClient } from "@libsql/client";
 
 export default async function handler(req, res) {
     if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+        return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const { inputUsername, inputPassword } = req.body;
-    if (!inputUsername || !inputPassword) {
-    return res.status(400).json({ error: "Username and password required"});
-    }
+    const { loginEmail, loginPassword } = req.body;
 
-    if (inputPassword.length < 8) {
-        return res.status(400).json({
-            error: "Password must be at least 8 characters"
-        });
+    if (!loginEmail || !loginPassword) {
+        return res.status(400).json({ error: "all fields are required"});
     }
 
     const client = createClient ({
@@ -26,15 +21,16 @@ export default async function handler(req, res) {
 
     try {
         const result = await client.execute({
-            sql: "SELECT id, username, password FROM players WHERE username = ? LIMIT 1",
-            args: [inputUsername]
+            sql: "SELECT id, username, email, password FROM players WHERE email = ? LIMIT 1",
+            args: [loginEmail]
         });
 
         let user = result.rows[0];
 
+        // if user exists, check password
         if (user) {
-            if (inputPassword !== user.password){
-                return res.status(401).json({ error: "Invalid credentials" });
+            if (loginPassword !== user.password){
+                return res.status(401).json({ error: "invalid credentials" });
             } else {
                 user = {
                     id: user.id,
@@ -42,24 +38,15 @@ export default async function handler(req, res) {
                 };
             }
 
+        // if not, return error
         } else {
-            const insertResult = await client.execute({
-                sql: "INSERT INTO players (username, password) VALUES (?, ?)",
-                args: [inputUsername, inputPassword]
-            });
-
-            const newUserId = insertResult.lastInsertRowid;
-            user = {
-                id: newUserId,
-                username: inputUsername
-            };
+            return res.status(401).json({ error: "user not found" });
         }
 
         return res.status(200).json({
             user: {
                 id: user.id.toString(),
                 username: user.username,
-                email: user.email
             }
         });
 
