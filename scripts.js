@@ -512,7 +512,7 @@ window.addEventListener("load", async() => {
         loginModal.style.display = "flex";
     } else {
         page.style.display = "flex";
-        titleDiv.innerHTML = `codeBreaker<br>welcome, ${username}!`;
+        titleDiv.innerHTML = `codeBreaker`;
         setMode();
     }
 
@@ -543,7 +543,7 @@ window.addEventListener("load", async() => {
             localStorage.setItem("codeBreakerId", data.user.id);
             document.getElementById("loginModal").style.display = "none";
             username = localStorage.getItem("codeBreakerName");
-            titleDiv.innerHTML = `codeBreaker<br>welcome, ${username}!`;
+            titleDiv.innerHTML = `codeBreaker`;
             setMode();
 
         } catch (error) {
@@ -580,7 +580,7 @@ window.addEventListener("load", async() => {
             localStorage.setItem("codeBreakerId", data.user.id);
             document.getElementById("loginModal").style.display = "none";
             username = localStorage.getItem("codeBreakerName");
-            titleDiv.innerHTML = `codeBreaker<br>welcome, ${username}!`;
+            titleDiv.innerHTML = `codeBreaker`;
             setMode();
 
         } catch (error) {
