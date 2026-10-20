@@ -275,7 +275,7 @@ window.addEventListener("load", async() => {
         sixDigitButton.style.display = "none";
         submitGuessButton.style.display = "none";
         revealCodeButton.style.display = "none";
-        logoutBtn.style.display = "block";
+        logoutBtn.style.display = "none";
 
         const challengeStart = Date.now();
 
@@ -285,7 +285,6 @@ window.addEventListener("load", async() => {
         }, 100);    
         
         for (let i = 4; i <= 6; i++) {
-            console.log('in challenge loop: ', mode);
             guessDiv.innerHTML = "";
             cluesDiv.innerHTML = "";
             creatingPuzzleMessage.style.display = "block";
@@ -300,9 +299,8 @@ window.addEventListener("load", async() => {
         const challengeTime = ((Date.now() - challengeStart) / 1000).toFixed(1);
         messageDiv.innerHTML = "Challenge Complete!";
         messageDiv.innerHTML += `<br>Time: ${challengeTime} seconds`;
-        
-        resetButton.style.display = "block";   
-
+        resetButton.style.display = "block";
+        logoutBtn.style.display = "block";   
     } 
 
     function howToPlay() {
@@ -442,6 +440,7 @@ window.addEventListener("load", async() => {
         fiveDigitButton.style.display = "none";
         sixDigitButton.style.display = "none";
         resetButton.style.display = "none";
+        logoutBtn.style.display = "none";
 
         // give the browser time to display the loading message
         await new Promise(resolve => setTimeout(resolve, 50));
@@ -457,6 +456,7 @@ window.addEventListener("load", async() => {
         fiveDigitButton.style.display = "none";
         sixDigitButton.style.display = "none";
         resetButton.style.display = "none";
+        logoutBtn.style.display = "none";
 
         // give the browser time to display the loading message
         await new Promise(resolve => setTimeout(resolve, 50));
@@ -472,6 +472,7 @@ window.addEventListener("load", async() => {
         fiveDigitButton.style.display = "none";
         sixDigitButton.style.display = "none";
         resetButton.style.display = "none";
+        logoutBtn.style.display = "none";
 
         // give the browser time to display the loading message
         await new Promise(resolve => setTimeout(resolve, 50));

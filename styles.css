@@ -203,12 +203,12 @@ body {
     max-width: 500px;
     margin: 0 auto 0;
     gap: 4px;
-    font-size: 20px;
+    font-size: 18px;
     box-sizing: border-box;
 }
 
 p {
-    margin: 10px;
+    margin: 7px;
     width: 366px;
 }
 
