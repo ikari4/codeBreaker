@@ -11,12 +11,12 @@ export default async function handler(req, res) {
     const { registerUsername, registerEmail, registerPassword } = req.body;
 
     if (!registerUsername || !registerEmail || !registerPassword) {
-        return res.status(400).json({ error: "all fields are required"});
+        return res.status(400).json({ error: "register: all fields are required"});
     }
 
     if (registerPassword.length < 8) {
         return res.status(400).json({
-            error: "password must be at least 8 characters"
+            error: "register: password must be at least 8 characters"
         });
     }
 
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
 
         // if username already exists, return error
         if (user) {
-            return res.status(409).json({ error: "username already exists" });
+            return res.status(409).json({ error: "register: username already exists" });
         }
 
         // check if email already exists
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
 
         // if email already exists, return error
         if (user) {
-            return res.status(409).json({ error: "email already exists" });
+            return res.status(409).json({ error: "register: email already exists" });
         }
 
         // if not, create new user

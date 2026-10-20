@@ -484,6 +484,7 @@ window.addEventListener("load", async() => {
     let username = localStorage.getItem("codeBreakerName");
     const loginModal = document.getElementById("loginModal");
     const loginBtn = document.getElementById("loginBtn");
+    const loginError = document.getElementById("loginError");
     const logoutBtn = document.getElementById("logoutButton");
     const registerBtn = document.getElementById("registerBtn");
     const page = document.getElementById("page");
@@ -508,9 +509,9 @@ window.addEventListener("load", async() => {
 
     // show login screen if user not logged in
     if(!username) {
-        loginModal.style.display = "block";
+        loginModal.style.display = "flex";
     } else {
-        page.style.display = "block";
+        page.style.display = "flex";
         titleDiv.innerHTML = `codeBreaker<br>welcome, ${username}!`;
         setMode();
     }
@@ -519,8 +520,8 @@ window.addEventListener("load", async() => {
     loginBtn.addEventListener("click", async () => {
         const loginEmail = document.getElementById("loginEmail").value.trim();
         const loginPassword = document.getElementById("loginPassword").value.trim();
-        const loginError = document.getElementById("loginError");
-        loginError.textContent = "";
+        
+        loginError.textContent = "please wait...";
 
         // call the backend js to check the username and password
         try {
@@ -556,8 +557,8 @@ window.addEventListener("load", async() => {
         const registerUsername = document.getElementById("registerUsername").value.trim();
         const registerEmail = document.getElementById("registerEmail").value.trim();
         const registerPassword = document.getElementById("registerPassword").value.trim();
-        const registerError = document.getElementById("registerError");
-        registerError.textContent = "";
+
+        loginError.textContent = "please wait...";
 
         // call the backend js to check the username and password
         try {
@@ -570,7 +571,7 @@ window.addEventListener("load", async() => {
             // process the returned data
             const data = await registerRes.json();
             if (!registerRes.ok) {
-                registerError.textContent = data.error;
+                loginError.textContent = data.error;
                 return;
             }
             

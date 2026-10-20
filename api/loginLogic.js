@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     const { loginEmail, loginPassword } = req.body;
 
     if (!loginEmail || !loginPassword) {
-        return res.status(400).json({ error: "all fields are required"});
+        return res.status(400).json({ error: "login: all fields are required"});
     }
 
     const client = createClient ({
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
         // if user exists, check password
         if (user) {
             if (loginPassword !== user.password){
-                return res.status(401).json({ error: "invalid credentials" });
+                return res.status(401).json({ error: "login: invalid credentials" });
             } else {
                 user = {
                     id: user.id,
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
         // if not, return error
         } else {
-            return res.status(401).json({ error: "user not found" });
+            return res.status(401).json({ error: "login: user not found" });
         }
 
         return res.status(200).json({
