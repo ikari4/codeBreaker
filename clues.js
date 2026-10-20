@@ -566,7 +566,7 @@ const cMiddleSum = {
 };
 
 // clue log
-const clueLog = [
+export const clueLog = [
     cDigitProduct,
     cDigitSum,
     cADSum,

@@ -1,26 +1,12 @@
+import { clueLog } from "./clues.js";
+import { generatePuzzle } from "./lib/puzzleGenerator.js";
+
 window.addEventListener("load", async() => {
     let solutionSet = [];
     let audioCtx = null;
     const digitDisplays = [];
     const digitButtons = [];
     const digitValues = [];
-
-    function getSolutionSet(clues, candidateCache) {
-        // returns the commom solution set for the sent clues
-        const clueSet = clues.map(clue =>
-            candidateCache.get(clue.name)
-        );
-
-        // start with the smallest set to minimize filtering
-        const smallestSet = clueSet.reduce(
-            (smallest, current) =>
-                current.size < smallest.size ? current : smallest
-        );
-
-        return [...smallestSet].filter(number =>
-            clueSet.every(set => set.has(number))
-        );
-    }
 
     async function initAudio() {
         if (!audioCtx) {
@@ -126,54 +112,6 @@ window.addEventListener("load", async() => {
         osc.stop(now + 0.56);
     }
 
-    function findBestFirstClue(availableClues, candidateCache) {
-        // returns clue that has the smallest solution set to use as a starting clue
-        let bestClue = null;
-        let smallestSize = Infinity;
-
-        availableClues.forEach(clue => {
-
-            const clueCandidates = candidateCache.get(clue.name);
-
-            if (clueCandidates.size < smallestSize) {
-                bestClue = clue;
-                smallestSize = clueCandidates.size;
-            }
-        });
-
-        return bestClue;
-    }
-
-    function findBestNextClue(availableClues, solutionSet, candidateCache) {
-        // returns clue that reduces the solutionSet the most
-        let bestClue = null;
-        let bestSolutionSet = null;
-        let smallestSize = Infinity;
-
-        availableClues.forEach(clue => {
-
-            const clueCandidates = candidateCache.get(clue.name);
-
-            const newSolutionSet = solutionSet.filter(number =>
-                clueCandidates.has(number)
-            );
-
-            if (
-                newSolutionSet.length > 0 &&
-                newSolutionSet.length < smallestSize
-            ) {
-                bestClue = clue;
-                bestSolutionSet = newSolutionSet;
-                smallestSize = newSolutionSet.length;
-            }
-        });
-
-        return {
-            clue: bestClue,
-            solutionSet: bestSolutionSet
-        };
-    }
-
     function setMode() {
         // user choice of practice, callenge or rules
         guessDiv.innerHTML = "";
@@ -194,134 +132,38 @@ window.addEventListener("load", async() => {
 
     function makePuzzle(mode,digitNum) {
         
-        let digits = [];
-        let selectedClues = [];
-        let candidates = [];
-        let candidateCache = [];
+        const puzzle = generatePuzzle(clueLog, digitNum);
 
-        while (true) {
-            // randomly select the digits for the puzzle
-            digits = [];
-            for (let i = 0; i < digitNum; i++) {
-                const num = Math.floor( Math.random() * 10 );
-                digits[i] = num;
-            }
-            //
-            console.log(`The number is ${digits.join("")}`);
-            //
-            // create array of candidates
-            candidates = [];
-            for (let i = 0; i < Math.pow(10, digitNum); i++) {
-                let stringNum = i.toString().padStart(digitNum, '0');
-                candidates.push(stringNum);
-            }
+        solutionSet = [puzzle.solution];
+        
+        // fill the digitValues array with zeros for the new puzzle and enable buttons
+        digitValues.fill(0);
 
-            // reset digit display
-            digitValues.fill(0);
+        digitDisplays.forEach(display => {
+            display.textContent = "0";
+        });
 
-            digitDisplays.forEach(display => {
-                display.textContent = "0";
-            });
+        digitButtons.forEach(button => {
+            button.disabled = false;
+        });
 
-            digitButtons.forEach(button => {
-                button.disabled = false;
-            });
-
-            // loop to find valid puzzle with unique solution set
-            selectedClues = [];
-
-            // create cache of solution sets for all clues given puzzle digits
-            candidateCache = new Map();
-            clueLog.forEach (clue => {
-                candidateCache.set(
-                    clue.name, 
-                    clue.remainingCandidates(
-                        clue.getValue(digits, digitNum), 
-                        candidates, 
-                        digitNum,
-                        digits
-                    ));
-            });
-
-            // reset clues and solution set for each iteration
-            let availableClues = [...clueLog];
-            selectedClues = [];
-
-            // pick the clue that produces the smallest candidate set
-            const firstClue = findBestFirstClue(availableClues, candidateCache);
-
-            availableClues.splice(availableClues.indexOf(firstClue), 1);
-
-            selectedClues.push(firstClue);
-
-            solutionSet = getSolutionSet(selectedClues, candidateCache);
-
-            // greedily add the clue that reduces the solution set the most
-            while (solutionSet.length > 1 && availableClues.length > 0) {
-
-                const best = findBestNextClue(availableClues, solutionSet, candidateCache);
-
-                if (!best.clue) {
-                    break;
-                }
-
-                selectedClues.push(best.clue);
-
-                availableClues.splice(availableClues.indexOf(best.clue), 1);
-
-                solutionSet = best.solutionSet;
-
-            }
-
-            // unique solution — break out of the loop and use this puzzle
-            // if no solution or no more clues, pick new number and try again
-            if (solutionSet.length === 1) {
-                // console.log("unique solution found");
-                break;
-            }
-            
-            // console.log("no solution, pick new number");
-        }
-
-        // remove any clues that are not necessary by testing without them one by one
-        let i = 0;
-
-        while (i < selectedClues.length) {
-
-            // don't remove the last clue
-            if (selectedClues.length === 1) {
-                break;
-            }
-
-            // test all clues except the current one
-            const testClues = selectedClues.filter((_, index) => index !== i);
-
-            // recalculate the solution set without this clue
-            const testSolutionSet = getSolutionSet(testClues, candidateCache);
-
-            // if we still have a unique solution then this clue is redundant
-            if (testSolutionSet.length === 1) {
-                selectedClues.splice(i, 1);
-            } else {
-                // this clue is necessary
-                i++;
-            }
-        }
-
+        // display the buttons appropriately for the mode
         submitGuessButton.style.display = "block";
+        playAgainButton.style.display = "none";
 
         if (mode === "practice") {
             revealCodeButton.style.display = "block";
         }
 
-        playAgainButton.style.display = "none";
-        // messageDiv.textContent = `The number is ${digits.join("")}`;
         messageDiv.textContent = "";
         cluesDiv.innerHTML = "";
 
         // display clues on the screen
         creatingPuzzleMessage.style.display = "none";
-        selectedClues.forEach(clue => {
+        
+        const digits = [...puzzle.solution].map(Number);
+
+        puzzle.selectedClues.forEach(clue => {
             const clueElement = document.createElement("p");
             clueElement.innerHTML = clue.getText(clue.getValue(digits, digitNum), digitNum);
             cluesDiv.appendChild(clueElement);
@@ -437,7 +279,7 @@ window.addEventListener("load", async() => {
 
         const challengeStart = Date.now();
 
-        timerInterval = setInterval(() => {
+        let timerInterval = setInterval(() => {
             const challengeTime = (Date.now() - challengeStart) / 1000;
             messageDiv.textContent = challengeTime.toFixed(1) + " seconds";
         }, 100);    
@@ -504,6 +346,7 @@ window.addEventListener("load", async() => {
     const howToPlayButton = document.getElementById("howToPlayButton");
     const resetButton = document.getElementById("resetButton");
     const creatingPuzzleMessage = document.getElementById("creatingPuzzleMessage");
+    let digitNum;
     let mode = "";
     let resolvePuzzle;
 
@@ -516,7 +359,6 @@ window.addEventListener("load", async() => {
         setMode();
     }
 
-    // on 'login' button click
     loginBtn.addEventListener("click", async () => {
         const loginEmail = document.getElementById("loginEmail").value.trim();
         const loginPassword = document.getElementById("loginPassword").value.trim();
@@ -552,7 +394,6 @@ window.addEventListener("load", async() => {
         }
     });
 
-    // on 'register' button click
     registerBtn.addEventListener("click", async () => {
         const registerUsername = document.getElementById("registerUsername").value.trim();
         const registerEmail = document.getElementById("registerEmail").value.trim();
