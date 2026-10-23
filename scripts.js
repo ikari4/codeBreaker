@@ -130,13 +130,50 @@ window.addEventListener("load", async() => {
         logoutBtn.style.display = "block";
     }
 
-    function makePuzzle(mode,digitNum) {
-        
-        const puzzle = generatePuzzle(clueLog, digitNum);
+    function makePuzzle(mode, digitNum, savedRound = null) {
 
-        solutionSet = [puzzle.solution];
-        
-        // fill the digitValues array with zeros for the new puzzle and enable buttons
+        let cluesToDisplay;
+
+        if (mode === "challenge") {
+            if (!savedRound || savedRound.digitNum !== digitNum) {
+                throw new Error("Invalid saved challenge round.");
+            }
+
+            // Do not store the daily solution in browser JavaScript.
+            solutionSet = [];
+
+            cluesToDisplay = savedRound.clues.map(savedClue => {
+                const clue = clueLog.find(
+                    item => item.name === savedClue.name
+                );
+
+                if (!clue) {
+                    throw new Error(
+                        `Unknown clue: ${savedClue.name}`
+                    );
+                }
+
+                return {
+                    text: clue.getText(savedClue.value, digitNum)
+                };
+            });
+
+        } else {
+            const puzzle = generatePuzzle(clueLog, digitNum);
+
+            solutionSet = [puzzle.solution];
+
+            const digits = [...puzzle.solution].map(Number);
+
+            cluesToDisplay = puzzle.selectedClues.map(clue => ({
+                text: clue.getText(
+                    clue.getValue(digits, digitNum),
+                    digitNum
+                )
+            }));
+        }
+
+        // Reset the digit controls.
         digitValues.fill(0);
 
         digitDisplays.forEach(display => {
@@ -147,30 +184,25 @@ window.addEventListener("load", async() => {
             button.disabled = false;
         });
 
-        // display the buttons appropriately for the mode
         submitGuessButton.style.display = "block";
         playAgainButton.style.display = "none";
 
-        if (mode === "practice") {
-            revealCodeButton.style.display = "block";
-        }
+        revealCodeButton.style.display =
+            mode === "practice" ? "block" : "none";
 
         messageDiv.textContent = "";
         cluesDiv.innerHTML = "";
-
-        // display clues on the screen
         creatingPuzzleMessage.style.display = "none";
-        
-        const digits = [...puzzle.solution].map(Number);
 
-        puzzle.selectedClues.forEach(clue => {
+        // Display the puzzle clues.
+        cluesToDisplay.forEach(clue => {
             const clueElement = document.createElement("p");
-            clueElement.innerHTML = clue.getText(clue.getValue(digits, digitNum), digitNum);
+            clueElement.textContent = clue.text;
             cluesDiv.appendChild(clueElement);
         });
     }
 
-    async function setupPage(mode, digitNum) {
+    async function setupPage(mode, digitNum, savedRound = null) {
         // promise set to return to challenge loop in challenge mode
         return new Promise(resolve => {
             resolvePuzzle = resolve;
@@ -238,7 +270,7 @@ window.addEventListener("load", async() => {
                 resetButton.style.display = "block";
             }
 
-            makePuzzle(mode, digitNum);
+            makePuzzle(mode, digitNum, savedRound);
         });
     }
 
@@ -257,14 +289,16 @@ window.addEventListener("load", async() => {
         sixDigitButton.style.display = "block";
         submitGuessButton.style.display = "none";
         revealCodeButton.style.display = "none";
-        logoutBtn.style.display = "block";
+        logoutBtn.style.display = "none";
     }
 
     async function setupChallenge() {
-        // reset the game state for challenge mode
+
+        // Reset the game state for challenge mode.
         guessDiv.innerHTML = "";
         cluesDiv.innerHTML = "";
         messageDiv.innerHTML = "";
+
         resetButton.style.display = "none";
         playAgainButton.style.display = "none";
         practiceButton.style.display = "none";
@@ -277,46 +311,105 @@ window.addEventListener("load", async() => {
         revealCodeButton.style.display = "none";
         logoutBtn.style.display = "none";
 
-        const challengeStart = Date.now();
+        creatingPuzzleMessage.style.display = "block";
+        messageDiv.textContent = "Loading today's challenge...";
 
-        let timerInterval = setInterval(() => {
-            const challengeTime = (Date.now() - challengeStart) / 1000;
-            messageDiv.textContent = challengeTime.toFixed(1) + " seconds";
-        }, 100);    
-        
-        for (let i = 4; i <= 6; i++) {
-            guessDiv.innerHTML = "";
-            cluesDiv.innerHTML = "";
-            creatingPuzzleMessage.style.display = "block";
+        let timerInterval;
 
-            // give the browser time to display the loading message
-            await new Promise(resolve => setTimeout(resolve, 50));
+        try {
+            // Retrieve the shared daily puzzle.
+            const response = await fetch("/api/getDailyChallenge");
+            const data = await response.json();
 
-            await setupPage("challenge", i);
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.error || "Unable to load today's challenge."
+                );
+            }
+
+            // Ensure all three rounds are present.
+            const rounds = [4, 5, 6].map(digitNum =>
+                data.rounds.find(
+                    round => round.digitNum === digitNum
+                )
+            );
+
+            if (rounds.some(round => !round)) {
+                throw new Error(
+                    "Today's challenge is missing a round."
+                );
+            }
+
+            const challengeStart = Date.now();
+
+            timerInterval = setInterval(() => {
+                const challengeTime =
+                    (Date.now() - challengeStart) / 1000;
+
+                messageDiv.textContent =
+                    challengeTime.toFixed(1) + " seconds";
+            }, 100);
+
+            // Play the saved 4-, 5-, and 6-digit rounds.
+            for (const round of rounds) {
+                guessDiv.innerHTML = "";
+                cluesDiv.innerHTML = "";
+                creatingPuzzleMessage.style.display = "block";
+
+                await new Promise(resolve =>
+                    setTimeout(resolve, 50)
+                );
+
+                await setupPage(
+                    "challenge",
+                    round.digitNum,
+                    round
+                );
+            }
+
+            clearInterval(timerInterval);
+            timerInterval = null;
+
+            const challengeTime =
+                ((Date.now() - challengeStart) / 1000).toFixed(1);
+
+            messageDiv.innerHTML = "Challenge Complete!";
+            messageDiv.innerHTML +=
+                `<br>Time: ${challengeTime} seconds`;
+
+        } catch (error) {
+            console.error("Challenge error:", error);
+
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            creatingPuzzleMessage.style.display = "none";
+
+            messageDiv.textContent =
+                error.message || "Unable to load today's challenge.";
+
+            messageDiv.style.color = "#ff4444";
         }
-        
-        clearInterval(timerInterval);
-        const challengeTime = ((Date.now() - challengeStart) / 1000).toFixed(1);
-        messageDiv.innerHTML = "Challenge Complete!";
-        messageDiv.innerHTML += `<br>Time: ${challengeTime} seconds`;
+
         resetButton.style.display = "block";
-        logoutBtn.style.display = "block";   
-    } 
+    }
 
     function howToPlay() {
         guessDiv.innerHTML = `
             <div class="gameChoice">
                 <p>how to play:</p>
-                <p>use the mathematical clues to deduce the correct number and crack the secret code</p>
-                <p><strong>nerd heaven</strong> allows you to solve puzzles of either 4, 5 or 6 digits as much as you'd like</p>
-                <p><strong>challenge mode</strong> is a timed challenge to solve one of each code length puzzle and compete against other nerds</p>
-                <p>the use of a caclulator is discouraged - try to solve the puzzles in your head for extra nerdiness</p>
+                <p>use the mathematical clues to crack the secret code</p>
+                <p><strong>zen mode</strong> allows you to practice solving puzzles of either 4, 5 or 6 digits</p>
+                <p><strong>challenge mode</strong> is a daily competition to solve a 4, 5 and 6 digit puzzle in the shortest time</p>
+                <p>the use of a caclulator is strongly discouraged - challenge yourself to solve the puzzles in your head</p>
             </div>
         `;
         resetButton.style.display = "block";
         practiceButton.style.display = "none";
         challengeButton.style.display = "none";
         howToPlayButton.style.display = "none";
+        logoutBtn.style.display = "none";
     }
 
     // main script starts here
@@ -530,8 +623,45 @@ window.addEventListener("load", async() => {
     submitGuessButton.addEventListener("click", async () => {
 
         const guess = digitValues.join("");
+        let isCorrect;
 
-        if (guess === solutionSet[0]) {
+        if (mode === "challenge") {
+            try {
+                const response = await fetch("/api/submitDailyGuess", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        guess,
+                        digitNum: guess.length
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.error || "Unable to check your guess."
+                    );
+                }
+
+                isCorrect = result.correct;
+
+            } catch (error) {
+                console.error("Daily guess error:", error);
+
+                messageDiv.textContent =
+                    "Unable to check your guess. Please try again.";
+                messageDiv.style.color = "#ff4444";
+                return;
+            }
+
+        } else {
+            isCorrect = guess === solutionSet[0];
+        }
+
+        if (isCorrect) {
             await playCorrectSound();
 
             messageDiv.innerHTML = "Correct!<br>You've cracked it!";
@@ -540,17 +670,14 @@ window.addEventListener("load", async() => {
             submitGuessButton.style.display = "none";
             revealCodeButton.style.display = "none";
 
-            // disable all up/down buttons
             digitButtons.forEach(button => {
                 button.disabled = true;
             });
 
-            // skip play again button if in challenge mode
             if (mode === "practice") {
                 playAgainButton.style.display = "block";
             }
 
-            // resolve the promise to continue in challenge mode
             if (resolvePuzzle) {
                 resolvePuzzle();
                 resolvePuzzle = null;
