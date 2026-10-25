@@ -197,7 +197,7 @@ window.addEventListener("load", async() => {
         // Display the puzzle clues.
         cluesToDisplay.forEach(clue => {
             const clueElement = document.createElement("p");
-            clueElement.textContent = clue.text;
+            clueElement.innerHTML = clue.text;
             cluesDiv.appendChild(clueElement);
         });
     }

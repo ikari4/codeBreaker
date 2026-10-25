@@ -20,6 +20,12 @@ export default async function handler(req, res) {
         });
     }
 
+    if (registerUsername.length > 10) {
+        return res.status(400).json({
+            error: "register: username must be no more than 10 characters"
+        });
+    }
+
     const client = createClient ({
         url: process.env.TURSO_DATABASE_URL,
         authToken: process.env.TURSO_AUTH_TOKEN,
