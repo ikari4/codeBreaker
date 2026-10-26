@@ -1,5 +1,6 @@
 
 import { createClient } from "@libsql/client";
+import { getAuthenticatedUser } from "../lib/session.js";
 
 const db = createClient({
     url: process.env.TURSO_DATABASE_URL,
@@ -29,12 +30,22 @@ export default async function handler(req, res) {
         });
     }
 
-    const { guess, digitNum } = req.body ?? {};
+    // Verify the player's signed session cookie.
+    const user = getAuthenticatedUser(req);
+
+    if (!user) {
+        return res.status(401).json({
+            error: "Please log in to play."
+        });
+    }
+
+    const digitCount = Number(req.body?.digitNum);
+    const guess = req.body?.guess;
 
     if (
-        ![4, 5, 6].includes(Number(digitNum)) ||
+        ![4, 5, 6].includes(digitCount) ||
         typeof guess !== "string" ||
-        !new RegExp(`^\\d{${Number(digitNum)}}$`).test(guess)
+        !new RegExp(`^\\d{${digitCount}}$`).test(guess)
     ) {
         return res.status(400).json({
             error: "Invalid guess."
@@ -44,26 +55,36 @@ export default async function handler(req, res) {
     const challengeDate = getChallengeDate();
 
     try {
+        // Find today's challenge and this player's attempt status.
         const result = await db.execute({
             sql: `
-                SELECT solutions
-                FROM challenges
-                WHERE challenge_date = ?
+                SELECT c.id, c.solutions, s.status
+                FROM challenges c
+                JOIN standings s
+                  ON s.challenge_id = c.id
+                WHERE c.challenge_date = ?
+                  AND s.player_id = ?
                 LIMIT 1
             `,
-            args: [challengeDate]
+            args: [challengeDate, Number(user.id)]
         });
 
         if (result.rows.length === 0) {
-            return res.status(404).json({
-                error: "Today's challenge is not available."
+            return res.status(403).json({
+                error: "You must start today's challenge first."
+            });
+        }
+
+        if (result.rows[0].status !== "in_progress") {
+            return res.status(409).json({
+                error: "Today's challenge is no longer in progress."
             });
         }
 
         const solutions = JSON.parse(result.rows[0].solutions);
 
         const round = solutions.find(
-            item => item.digitNum === Number(digitNum)
+            item => item.digitNum === digitCount
         );
 
         if (!round) {
@@ -84,3 +105,4 @@ export default async function handler(req, res) {
         });
     }
 }
+

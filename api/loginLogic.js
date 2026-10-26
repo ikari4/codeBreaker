@@ -2,16 +2,28 @@
 // take input from login form, checks database, saves player info to local storage
 
 import { createClient } from "@libsql/client";
+import { createSessionToken, createSessionCookie } from "../lib/session.js";
 
 export default async function handler(req, res) {
     if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method not allowed" });
+        res.setHeader("Allow", "POST");
+        return res.status(405).json({
+            error: "Method not allowed"
+        });
     }
 
     const { loginEmail, loginPassword } = req.body;
 
     if (!loginEmail || !loginPassword) {
         return res.status(400).json({ error: "login: all fields are required"});
+    }
+
+    if (!process.env.SESSION_SECRET) {
+        console.error("SESSION_SECRET is not configured");
+
+        return res.status(500).json({
+            error: "Server configuration error"
+        });
     }
 
     const client = createClient ({
@@ -27,31 +39,34 @@ export default async function handler(req, res) {
 
         let user = result.rows[0];
 
-        // if user exists, check password
-        if (user) {
-            if (loginPassword !== user.password){
-                return res.status(401).json({ error: "login: invalid credentials" });
-            } else {
-                user = {
-                    id: user.id,
-                    username: user.username
-                };
-            }
 
-        // if not, return error
-        } else {
-            return res.status(401).json({ error: "login: user not found" });
+        if (!user || loginPassword !== user.password) {
+            return res.status(401).json({
+                error: "login: invalid credentials"
+            });
         }
+
+        const authenticatedUser = {
+            id: String(user.id),
+            username: user.username
+        };
+
+        const token = createSessionToken(authenticatedUser);
+
+        res.setHeader(
+            "Set-Cookie",
+            createSessionCookie(token)
+        );
 
         return res.status(200).json({
-            user: {
-                id: user.id.toString(),
-                username: user.username,
-            }
+            user: authenticatedUser
         });
 
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: "Server error" });
-        }
+    } catch (error) {
+        console.error("login failed:", error);
+
+        return res.status(500).json({
+            error: "Server error"
+        });
     }
+}

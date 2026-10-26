@@ -112,7 +112,7 @@ window.addEventListener("load", async() => {
         osc.stop(now + 0.56);
     }
 
-    function setMode() {
+    async function setMode() {
         // user choice of practice, callenge or rules
         guessDiv.innerHTML = "";
         cluesDiv.innerHTML = "";
@@ -128,6 +128,9 @@ window.addEventListener("load", async() => {
         submitGuessButton.style.display = "none";
         revealCodeButton.style.display = "none";
         logoutBtn.style.display = "block";
+        standingsDiv.style.display = "flex";
+
+        await loadDailyStandings();
     }
 
     function makePuzzle(mode, digitNum, savedRound = null) {
@@ -290,6 +293,7 @@ window.addEventListener("load", async() => {
         submitGuessButton.style.display = "none";
         revealCodeButton.style.display = "none";
         logoutBtn.style.display = "none";
+        standingsDiv.style.display = "none";
     }
 
     async function setupChallenge() {
@@ -310,6 +314,7 @@ window.addEventListener("load", async() => {
         submitGuessButton.style.display = "none";
         revealCodeButton.style.display = "none";
         logoutBtn.style.display = "none";
+        standingsDiv.style.display = "none";
 
         creatingPuzzleMessage.style.display = "block";
         messageDiv.textContent = "Loading today's challenge...";
@@ -317,17 +322,24 @@ window.addEventListener("load", async() => {
         let timerInterval;
 
         try {
-            // Retrieve the shared daily puzzle.
-            const response = await fetch("/api/getDailyChallenge");
+            // Start today's challenge and record the attempt on the server.
+            const response = await fetch("/api/startDailyChallenge", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({})
+            });
+
             const data = await response.json();
 
             if (!response.ok || !data.success) {
                 throw new Error(
-                    data.error || "Unable to load today's challenge."
+                    data.error || "Unable to start today's challenge."
                 );
             }
 
-            // Ensure all three rounds are present.
+            // Ensure all three rounds are present in the expected order.
             const rounds = [4, 5, 6].map(digitNum =>
                 data.rounds.find(
                     round => round.digitNum === digitNum
@@ -340,6 +352,7 @@ window.addEventListener("load", async() => {
                 );
             }
 
+            // Start the timer after the server accepts the attempt.
             const challengeStart = Date.now();
 
             timerInterval = setInterval(() => {
@@ -370,12 +383,38 @@ window.addEventListener("load", async() => {
             clearInterval(timerInterval);
             timerInterval = null;
 
+            // Save the completed challenge and get the server-recorded time.
+            messageDiv.textContent = "Saving your result...";
+
+            const completionResponse = await fetch(
+                "/api/completeDailyChallenge",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({})
+                }
+            );
+
+            const completionData = await completionResponse.json();
+
+            if (!completionResponse.ok || !completionData.success) {
+                throw new Error(
+                    completionData.error || "Unable to save your challenge result."
+                );
+            }
+
             const challengeTime =
-                ((Date.now() - challengeStart) / 1000).toFixed(1);
+                Number(completionData.completionTimeSeconds).toFixed(1);
 
             messageDiv.innerHTML = "Challenge Complete!";
             messageDiv.innerHTML +=
                 `<br>Time: ${challengeTime} seconds`;
+            messageDiv.style.color = "#22cc44";
+
+
+            // We'll save this completion time to standings in the next step.
 
         } catch (error) {
             console.error("Challenge error:", error);
@@ -395,6 +434,108 @@ window.addEventListener("load", async() => {
         resetButton.style.display = "block";
     }
 
+    async function loadDailyStandings() {
+        const standingsDiv = document.getElementById("standingsDiv");
+
+        standingsDiv.textContent = "Loading standings...";
+
+        try {
+            const response = await fetch("/api/getDailyStandings");
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Unable to load standings.");
+            }
+
+            if (!data.standings || data.standings.length === 0) {
+                standingsDiv.textContent = "No standings available yet.";
+                return;
+            }
+
+
+            const container = document.createElement("div");
+
+            // Helper to create a standings table.
+            function createTable(title, headers, rows) {
+                const section = document.createElement("section");
+
+                const heading = document.createElement("h3");
+                heading.textContent = title;
+                section.appendChild(heading);
+
+                const table = document.createElement("table");
+                table.className = "standingsTable";
+
+                const thead = document.createElement("thead");
+                const headerRow = document.createElement("tr");
+
+                headers.forEach(header => {
+                    const th = document.createElement("th");
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                });
+
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                const tbody = document.createElement("tbody");
+
+                rows.forEach(values => {
+                    const row = document.createElement("tr");
+
+                    values.forEach(value => {
+                        const cell = document.createElement("td");
+                        cell.textContent = String(value);
+                        row.appendChild(cell);
+                    });
+
+                    tbody.appendChild(row);
+                });
+
+                table.appendChild(tbody);
+                section.appendChild(table);
+                container.appendChild(section);
+            }
+
+            // Table 1: Today's leaderboard.
+            createTable(
+                "Today's Leaderboard",
+                [" ", "Player", "Today's Time"],
+                data.standings.map(player => [
+                    player.rank ?? "—",
+                    player.username,
+                    player.todayTime !== null
+                        ? `${Number(player.todayTime).toFixed(1)} s`
+                        : player.todayStatus === "in_progress"
+                            ? "In progress"
+                            : "—"
+                ])
+            );
+
+            // Table 2: Recent performance.
+            // Rank here is the player's rank in today's leaderboard.
+            createTable(
+                "30-Day Statistics",
+                [" ", "Player", "Streak", "Average"],
+                data.standings.map(player => [
+                    player.rank ?? "—",
+                    player.username,
+                    player.streak,
+                    player.averageTime !== null
+                        ? `${Number(player.averageTime).toFixed(1)} s`
+                        : "—"
+                ])
+            );
+
+            standingsDiv.replaceChildren(container);
+
+
+        } catch (error) {
+            console.error("Loading daily standings failed:", error);
+            standingsDiv.textContent = "Unable to load standings.";
+        }
+    }
+
     function howToPlay() {
         guessDiv.innerHTML = `
             <div class="gameChoice">
@@ -410,6 +551,7 @@ window.addEventListener("load", async() => {
         challengeButton.style.display = "none";
         howToPlayButton.style.display = "none";
         logoutBtn.style.display = "none";
+        standingsDiv.style.display = "none";
     }
 
     // main script starts here
@@ -664,7 +806,12 @@ window.addEventListener("load", async() => {
         if (isCorrect) {
             await playCorrectSound();
 
-            messageDiv.innerHTML = "Correct!<br>You've cracked it!";
+            if (mode === "practice") {
+                messageDiv.innerHTML = "Correct!<br>You've cracked it!";
+            } else {
+                messageDiv.textContent = "Correct! You've cracked it!";
+            }
+
             messageDiv.style.color = "#22cc44";
 
             submitGuessButton.style.display = "none";
