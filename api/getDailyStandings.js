@@ -54,8 +54,7 @@ export default async function handler(req, res) {
                     ON s.player_id = p.id
                 LEFT JOIN challenges c
                     ON c.id = s.challenge_id
-                WHERE c.challenge_date IS NULL
-                   OR c.challenge_date <= ?
+                    AND c.challenge_date <= ?
                 ORDER BY p.username, c.challenge_date DESC
             `,
             args: [today]

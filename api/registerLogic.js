@@ -2,6 +2,7 @@
 // take input from register form, checks database, saves player info to local storage
 
 import { createClient } from "@libsql/client";
+import { createSessionToken, createSessionCookie} from "../lib/session.js";
 
 export default async function handler(req, res) {
     if (req.method !== "POST") {
@@ -57,24 +58,34 @@ export default async function handler(req, res) {
             return res.status(409).json({ error: "register: email already exists" });
         }
 
-        // if not, create new user
+
+        // Create the new user.
         const insertResult = await client.execute({
             sql: "INSERT INTO players (username, email, password) VALUES (?, ?, ?)",
             args: [registerUsername, registerEmail, registerPassword]
         });
 
-        const newUserId = insertResult.lastInsertRowid;
+        // Convert the database ID to a string to avoid BigInt issues.
         user = {
-            id: newUserId,
-            username: registerUsername,
+            id: insertResult.lastInsertRowid.toString(),
+            username: registerUsername
         };
 
-        return res.status(200).json({
+        // Create an authenticated session.
+        const token = createSessionToken(user);
+
+        res.setHeader(
+            "Set-Cookie",
+            createSessionCookie(token)
+        );
+
+        return res.status(201).json({
             user: {
-                id: user.id.toString(),
-                username: user.username,
+                id: user.id,
+                username: user.username
             }
         });
+
 
     } catch (err) {
         console.error(err);

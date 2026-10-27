@@ -185,7 +185,6 @@ body {
     gap: 8px;
 }
 
-
 .button {
     margin-left: 12px;
     height: 55px;
@@ -232,6 +231,10 @@ p {
     margin-top: 20px;
     margin-bottom: 20px;
     font-size: 26px;
+}
+
+#messageDiv:empty {
+    display: none;
 }
 
 .creatingPuzzle {

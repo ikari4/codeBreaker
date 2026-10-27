@@ -597,6 +597,7 @@ window.addEventListener("load", async() => {
         const loginPassword = document.getElementById("loginPassword").value.trim();
         
         loginError.textContent = "please wait...";
+        loginBtn.textContent = "wait..."
 
         // call the backend js to check the username and password
         try {
@@ -610,6 +611,7 @@ window.addEventListener("load", async() => {
             const data = await loginRes.json();
             if (!loginRes.ok) {
                 loginError.textContent = data.error;
+                loginBtn.textContent = "login";
                 return;
             }
             
@@ -622,8 +624,9 @@ window.addEventListener("load", async() => {
             setMode();
 
         } catch (error) {
-            console.error("Error during login:", err);
+            console.error("Error during login:", error);
             loginError.textContent = "An error occurred. Please try again.";
+            loginBtn.textContent = "login";
         }
     });
 
@@ -633,6 +636,7 @@ window.addEventListener("load", async() => {
         const registerPassword = document.getElementById("registerPassword").value.trim();
 
         loginError.textContent = "please wait...";
+        registerBtn.textContent = "wait..."
 
         // call the backend js to check the username and password
         try {
@@ -646,6 +650,7 @@ window.addEventListener("load", async() => {
             const data = await registerRes.json();
             if (!registerRes.ok) {
                 loginError.textContent = data.error;
+                registerBtn.textContent = "register";
                 return;
             }
             
@@ -658,8 +663,9 @@ window.addEventListener("load", async() => {
             setMode();
 
         } catch (error) {
-            console.error("Error during login:", err);
+            console.error("Error during login:", error);
             loginError.textContent = "An error occurred. Please try again.";
+            registerBtn.textContent = "register";
         }
     });
 
@@ -839,10 +845,23 @@ window.addEventListener("load", async() => {
     });
 
     logoutBtn.addEventListener("click", async () => {
-        // clear local storage and reset the page
-        localStorage.removeItem("codeBreakerName");
-        localStorage.removeItem("codeBreakerId");
-        window.location.reload();
+        try {
+            const response = await fetch("/api/logout", {
+                method: "POST"
+            });
+
+            if (!response.ok) {
+                throw new Error("Logout failed.");
+            }
+
+            localStorage.removeItem("codeBreakerName");
+            localStorage.removeItem("codeBreakerId");
+
+            window.location.reload();
+        } catch (error) {
+            console.error("Logout error:", error);
+            alert("Unable to log out. Please try again.");
+        }
     });
 
         // splash screen fadeaway
