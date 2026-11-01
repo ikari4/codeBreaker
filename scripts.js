@@ -501,30 +501,39 @@ window.addEventListener("load", async() => {
             createTable(
                 "Today's Leaderboard",
                 [" ", "Player", "Today's Time"],
-                data.standings.map(player => [
-                    player.todayRank ?? "—",
-                    player.username,
-                    player.todayTime !== null
-                        ? `${Number(player.todayTime).toFixed(1)} s`
-                        : player.todayStatus === "in_progress"
-                            ? "In progress"
-                            : "—"
-                ])
+                data.standings
+                    .slice()
+                    .sort((a, b) =>
+                        (a.todayRank ?? Infinity) - (b.todayRank ?? Infinity)
+                    )
+                    .map(player => [
+                        player.todayRank ?? "—",
+                        player.username,
+                        player.todayTime !== null
+                            ? `${Number(player.todayTime).toFixed(1)} s`
+                            : player.todayStatus === "in_progress"
+                                ? "In progress"
+                                : "—"
+                    ])
             );
 
             // Table 2: Recent performance.
-            // Rank here is the player's rank in today's leaderboard.
             createTable(
                 "30-Day Statistics",
                 [" ", "Player", "Streak", "Average"],
-                data.standings.map(player => [
-                    player.averageRank ?? "—",
-                    player.username,
-                    player.streak,
-                    player.averageTime !== null
-                        ? `${Number(player.averageTime).toFixed(1)} s`
-                        : "—"
-                ])
+                data.standings
+                    .slice()
+                    .sort((a, b) =>
+                        (a.averageRank ?? Infinity) - (b.averageRank ?? Infinity)
+                    )
+                    .map(player => [
+                        player.averageRank ?? "—",
+                        player.username,
+                        player.streak,
+                        player.averageTime !== null
+                            ? `${Number(player.averageTime).toFixed(1)} s`
+                            : "—"
+                    ])
             );
 
             standingsDiv.replaceChildren(container);

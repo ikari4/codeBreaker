@@ -181,15 +181,6 @@ export default async function handler(req, res) {
             player.averageRank = index + 1;
         });
 
-        // Completed players rank by today's time; unfinished players follow.
-        // standings.sort((a, b) => {
-        //     if (a.todayTime === null && b.todayTime !== null) return 1;
-        //     if (a.todayTime !== null && b.todayTime === null) return -1;
-        //     if (a.todayTime !== null && b.todayTime !== null) {
-        //         return a.todayTime - b.todayTime;
-        //     }
-        //     return a.username.localeCompare(b.username);
-        // });
 
         return res.status(200).json({
             success: true,
