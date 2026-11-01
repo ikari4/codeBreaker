@@ -824,6 +824,7 @@ window.addEventListener("load", async() => {
             messageDiv.style.color = "#22cc44";
 
             submitGuessButton.textContent = "submit guess";
+            submitGuessButton.disabled = false;
             submitGuessButton.style.display = "none";
             revealCodeButton.style.display = "none";
 
