@@ -118,6 +118,12 @@ export default async function handler(req, res) {
             let streak = 0;
             let expectedDate = today;
 
+            if (!dates.includes(today)) {
+                const yesterday = new Date(`${today}T12:00:00Z`);
+                yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+                expectedDate = yesterday.toISOString().slice(0, 10);
+            }            
+
             for (const date of dates) {
                 if (date === expectedDate) {
                     streak++;
@@ -140,10 +146,12 @@ export default async function handler(req, res) {
                 username: player.username,
                 todayTime: player.todayTime,
                 todayStatus: player.todayStatus,
+                todayRank: null,
                 streak,
                 averageTime: averageTime === null
                     ? null
                     : Number(averageTime.toFixed(1)),
+                averageRank: null,
                 gamesPlayed: player.datesPlayed.filter(date => {
                     const daysAgo = (
                         new Date(`${today}T12:00:00Z`) -
@@ -155,23 +163,38 @@ export default async function handler(req, res) {
             };
         });
 
-        // Completed players rank by today's time; unfinished players follow.
-        standings.sort((a, b) => {
-            if (a.todayTime === null && b.todayTime !== null) return 1;
-            if (a.todayTime !== null && b.todayTime === null) return -1;
-            if (a.todayTime !== null && b.todayTime !== null) {
-                return a.todayTime - b.todayTime;
-            }
-            return a.username.localeCompare(b.username);
+        // Today's leaderboard ranking.
+        const todayRanked = standings
+            .filter(player => player.todayTime !== null)
+            .sort((a, b) => a.todayTime - b.todayTime);
+
+        todayRanked.forEach((player, index) => {
+            player.todayRank = index + 1;
         });
+
+        // 30-day average ranking.
+        const averageRanked = standings
+            .filter(player => player.averageTime !== null)
+            .sort((a, b) => a.averageTime - b.averageTime);
+
+        averageRanked.forEach((player, index) => {
+            player.averageRank = index + 1;
+        });
+
+        // Completed players rank by today's time; unfinished players follow.
+        // standings.sort((a, b) => {
+        //     if (a.todayTime === null && b.todayTime !== null) return 1;
+        //     if (a.todayTime !== null && b.todayTime === null) return -1;
+        //     if (a.todayTime !== null && b.todayTime !== null) {
+        //         return a.todayTime - b.todayTime;
+        //     }
+        //     return a.username.localeCompare(b.username);
+        // });
 
         return res.status(200).json({
             success: true,
             challengeDate: today,
-            standings: standings.map((player, index) => ({
-                rank: player.todayTime === null ? null : index + 1,
-                ...player
-            }))
+            standings
         });
 
     } catch (error) {

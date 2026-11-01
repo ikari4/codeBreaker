@@ -502,7 +502,7 @@ window.addEventListener("load", async() => {
                 "Today's Leaderboard",
                 [" ", "Player", "Today's Time"],
                 data.standings.map(player => [
-                    player.rank ?? "—",
+                    player.todayRank ?? "—",
                     player.username,
                     player.todayTime !== null
                         ? `${Number(player.todayTime).toFixed(1)} s`
@@ -518,7 +518,7 @@ window.addEventListener("load", async() => {
                 "30-Day Statistics",
                 [" ", "Player", "Streak", "Average"],
                 data.standings.map(player => [
-                    player.rank ?? "—",
+                    player.averageRank ?? "—",
                     player.username,
                     player.streak,
                     player.averageTime !== null
@@ -543,7 +543,7 @@ window.addEventListener("load", async() => {
                 <p>use the mathematical clues to crack the secret code</p>
                 <p><strong>zen mode</strong> allows you to practice solving puzzles of either 4, 5 or 6 digits</p>
                 <p><strong>challenge mode</strong> is a daily competition to solve a 4, 5 and 6 digit puzzle in the shortest time</p>
-                <p>the use of a caclulator is strongly discouraged - challenge yourself to solve the puzzles in your head</p>
+                <p>the use of a caclulator is strongly discouraged</p>
             </div>
         `;
         resetButton.style.display = "block";
@@ -770,6 +770,9 @@ window.addEventListener("load", async() => {
 
     submitGuessButton.addEventListener("click", async () => {
 
+        submitGuessButton.disabled = true;
+        submitGuessButton.textContent = "wait...";
+
         const guess = digitValues.join("");
         let isCorrect;
 
@@ -820,6 +823,7 @@ window.addEventListener("load", async() => {
 
             messageDiv.style.color = "#22cc44";
 
+            submitGuessButton.textContent = "submit guess";
             submitGuessButton.style.display = "none";
             revealCodeButton.style.display = "none";
 
@@ -840,7 +844,8 @@ window.addEventListener("load", async() => {
             await playIncorrectSound();
 
             messageDiv.innerHTML = "Incorrect guess!<br>Try again!";
-            messageDiv.style.color = "#ff4444";
+            submitGuessButton.disabled = false;
+            submitGuessButton.textContent = "submit guess";
         }
     });
 
