@@ -554,7 +554,7 @@ window.addEventListener("load", async() => {
                 <p>use the mathematical clues to crack the secret code</p>
                 <p><strong>zen mode</strong> allows you to practice solving puzzles of either 4, 5 or 6 digits</p>
                 <p><strong>challenge mode</strong> is a daily competition to solve a 4, 5 and 6 digit puzzle in the shortest time</p>
-                <p>the use of a caclulator is strongly discouraged</p>
+                <p>the use of a calculator is strongly discouraged</p>
             </div>
         `;
         resetButton.style.display = "block";
