@@ -503,6 +503,7 @@ window.addEventListener("load", async() => {
                 [" ", "Player", "Today's Time"],
                 data.standings
                     .slice()
+                    .filter(player => player.todayRank !== null)
                     .sort((a, b) =>
                         (a.todayRank ?? Infinity) - (b.todayRank ?? Infinity)
                     )
@@ -523,6 +524,7 @@ window.addEventListener("load", async() => {
                 [" ", "Player", "Streak", "Average"],
                 data.standings
                     .slice()
+                    .filter(player => player.averageRank !== null)
                     .sort((a, b) =>
                         (a.averageRank ?? Infinity) - (b.averageRank ?? Infinity)
                     )
