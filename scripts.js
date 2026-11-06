@@ -496,27 +496,29 @@ window.addEventListener("load", async() => {
                 section.appendChild(table);
                 container.appendChild(section);
             }
-
+console.log(data);
             // Table 1: Today's leaderboard.
-            createTable(
-                "Today's Leaderboard",
-                [" ", "Player", "Today's Time"],
-                data.standings
-                    .slice()
-                    .filter(player => player.todayRank !== null)
-                    .sort((a, b) =>
-                        (a.todayRank ?? Infinity) - (b.todayRank ?? Infinity)
-                    )
-                    .map(player => [
-                        player.todayRank ?? "—",
-                        player.username,
-                        player.todayTime !== null
-                            ? `${Number(player.todayTime).toFixed(1)} s`
-                            : player.todayStatus === "in_progress"
-                                ? "In progress"
-                                : "—"
-                    ])
-            );
+            if (data.standings.some(player => player.todayRank !== null)) {
+                createTable(
+                    "Today's Leaderboard",
+                    [" ", "Player", "Today's Time"],
+                    data.standings
+                        .slice()
+                        .filter(player => player.todayRank !== null)
+                        .sort((a, b) =>
+                            (a.todayRank ?? Infinity) - (b.todayRank ?? Infinity)
+                        )
+                        .map(player => [
+                            player.todayRank ?? "—",
+                            player.username,
+                            player.todayTime !== null
+                                ? `${Number(player.todayTime).toFixed(1)} s`
+                                : player.todayStatus === "in_progress"
+                                    ? "In progress"
+                                    : "—"
+                        ])
+                );
+            }
 
             // Table 2: Recent performance.
             createTable(
